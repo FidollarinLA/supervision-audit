@@ -208,19 +208,7 @@ pub fn audit(doc : Document) -> Report {
 pub fn audit_json(text : String) -> String {
   if text.length() > 1048576 { return error_json("Input exceeds 1048576 UTF-16 code units") }
   try {
-    let parsed = @json.parse(text)
-    // Accept explicit JSON null for the optional baseline, as well as omission.
-    if parsed is Object(fields) {
-      match fields.get("samples") {
-        Some(Array(rows)) => for row in rows {
-          if row is Object(sample_fields) && sample_fields.get("original_supervised_tokens") is Some(Null) {
-            sample_fields.remove("original_supervised_tokens") |> ignore
-          }
-        }
-        _ => ()
-      }
-    }
-    let doc : Document = @json.from_json(parsed)
+    let doc = decode_document(text)
     if doc.samples.length() > 200 { return error_json("Interactive audit supports at most 200 samples") }
     let result : Json = { "ok": true, "report": audit(doc).to_json() }
     result.stringify()
@@ -267,3 +255,20 @@ pub extend SampleReport with ToJson::{to_json}
 
 ///|
 pub extend Report with ToJson::{to_json}
+
+///|
+fn decode_document(text : String) -> Document raise {
+    let parsed = @json.parse(text)
+    // Accept explicit JSON null for the optional baseline, as well as omission.
+    if parsed is Object(fields) {
+      match fields.get("samples") {
+        Some(Array(rows)) => for row in rows {
+          if row is Object(sample_fields) && sample_fields.get("original_supervised_tokens") is Some(Null) {
+            sample_fields.remove("original_supervised_tokens") |> ignore
+          }
+        }
+        _ => ()
+      }
+    }
+    @json.from_json(parsed)
+}

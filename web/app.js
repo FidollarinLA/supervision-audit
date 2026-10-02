@@ -1,4 +1,4 @@
-import { audit_json } from './engine.js';
+import { audit_json, compare_json } from './engine.js';
 const $ = id => document.getElementById(id);
 const labels = {ROLE_POLICY_VIOLATION:['角色监督范围错误','该 token 属于当前策略排除的角色，却仍参与监督。'],PADDING_SUPERVISED:['Padding 参与监督','注意力标记为 0 的 token 带有训练标签。'],LABEL_TOKEN_MISMATCH:['训练标签与 token 不一致','此契约要求 label 与同位置 token 一致，或设为 -100。'],NO_SUPERVISION:['整条样本没有监督信号','所有训练标签均为 -100，请确认是否为有意设置。'],SUPERVISION_REDUCED:['监督信号减少','当前监督数量少于提供的基线，需检查截断或预处理。'],SOURCE_OVERLAP:['样本来源区间重叠','同一个 token 被多个来源区间覆盖。'],ROLE_OVERLAP:['对话角色区间重叠','同一个 token 被多个角色区间覆盖。'],ROLE_PROVENANCE_MISSING:['角色证据不足','缺少完整的角色映射，相关策略无法得到完整验证。'],SOURCE_PROVENANCE_MISSING:['来源证据不足','缺少来源区间，无法完整核对样本拼接。'],PACKING_CROSS_SOURCE_TARGET:['跨样本预测目标','后续来源的第一个 token 没有被忽略，普通因果注意力会从上一来源预测它。'],FIRST_TOKEN_NOT_PREDICTED:['首个标签不产生预测','模型内部位移时，位置 0 的标签不会参与下一 token 预测。']};
 const severityName={error:'错误',warning:'提示',unknown:'缺少证据'};
@@ -16,3 +16,5 @@ $('run').onclick=run;$('preset').onchange=preset;$('sample').onchange=()=>{curre
 $('file').onchange=async()=>{const file=$('file').files[0];if(!file)return;if(file.size>1048576){$('notice').textContent='首版支持最大 1 MiB 的 JSON 文件。';return;}$('input').value=await file.text();run();};
 $('export').onclick=()=>{if(!result){$('notice').textContent='请先成功运行审计。';return;}const url=URL.createObjectURL(new Blob([JSON.stringify(result,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='supervision-audit-report.json';a.click();URL.revokeObjectURL(url);};
 await preset();
+
+$('baseline').onchange=async()=>{const file=$('baseline').files[0];if(!file)return;if(file.size>1048576){$('notice').textContent='基线文件超过 1 MiB。';return;}const comparison=JSON.parse(compare_json(await file.text(),$('input').value));if(!comparison.ok){$('notice').textContent=comparison.error;return;}const c=comparison.comparison;$('notice').textContent=`基线比较：${c.new_findings.length} 项新增问题，${c.resolved_findings.length} 项已消失问题；${c.samples.filter(s=>s.change!=='stable').length} 条样本的声明覆盖数量或样本集合发生变化。数量稳定不代表 token 标签完全相同。`;};
