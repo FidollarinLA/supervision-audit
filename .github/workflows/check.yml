@@ -1,0 +1,41 @@
+name: Check
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  audit:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install official MoonBit toolchain
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Inspect toolchain
+        run: moon version --all
+      - name: Check and test audit core
+        run: |
+          moon check --target js --deny-warn
+          moon test --target js --deny-warn
+          moon test --target wasm-gc --deny-warn
+          moon test --target native --deny-warn
+      - name: Check generated interface and formatting
+        run: |
+          moon info
+          moon fmt
+          git diff --exit-code
+      - name: Test bridge and independent oracle
+        run: |
+          npm run build
+          npm test
+          node cli.mjs examples/healthy.json
+          node cli.mjs examples/preprocessed.jsonl --jsonl
