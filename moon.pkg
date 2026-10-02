@@ -1,0 +1,3 @@
+import { "moonbitlang/core/json", }
+pkgtype(kind: "foreign_library")
+options(link: { "js": { "format": "esm" } })
