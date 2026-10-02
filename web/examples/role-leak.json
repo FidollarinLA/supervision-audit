@@ -1,0 +1,58 @@
+{
+  "contract": "causal-lm-unshifted-v1",
+  "allowed_roles": [
+    "assistant"
+  ],
+  "samples": [
+    {
+      "id": "sample-001",
+      "input_ids": [
+        101,
+        12,
+        13,
+        102,
+        21,
+        22,
+        103
+      ],
+      "labels": [
+        -100,
+        12,
+        -100,
+        -100,
+        21,
+        22,
+        103
+      ],
+      "attention_mask": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "spans": [
+        {
+          "start": 0,
+          "end": 4,
+          "role": "user"
+        },
+        {
+          "start": 4,
+          "end": 7,
+          "role": "assistant"
+        }
+      ],
+      "segments": [
+        {
+          "start": 0,
+          "end": 7,
+          "source_id": "conversation-A"
+        }
+      ],
+      "original_supervised_tokens": null
+    }
+  ]
+}
