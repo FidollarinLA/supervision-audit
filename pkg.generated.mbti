@@ -1,0 +1,124 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "FidollarinLA/supervision_audit"
+
+import {
+  "moonbitlang/core/json",
+}
+
+// Values
+pub fn audit(Document) -> Report
+
+pub fn audit_json(String) -> String
+
+pub fn audit_jsonl(String, String) -> String
+
+pub fn compare(Report, Report) -> Comparison
+
+pub fn compare_json(String, String) -> String
+
+// Errors
+
+// Types and methods
+pub(all) struct Comparison {
+  before_status : String
+  after_status : String
+  samples : Array[SampleDelta]
+  new_findings : Array[Finding]
+  resolved_findings : Array[Finding]
+} derive(ToJson)
+pub fn Comparison::to_json(Self) -> Json
+
+pub(all) struct Document {
+  contract : String
+  allowed_roles : Array[String]
+  samples : Array[Sample]
+} derive(ToJson, @json.FromJson)
+pub fn Document::from_json(Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
+pub fn Document::to_json(Self) -> Json
+
+pub(all) struct Finding {
+  code : String
+  severity : String
+  sample_id : String
+  token_index : Int?
+  message : String
+} derive(ToJson)
+pub fn Finding::to_json(Self) -> Json
+
+pub(all) struct PreprocessedRow {
+  id : String?
+  input_ids : Array[Int]
+  labels : Array[Int]
+  attention_mask : Array[Int]
+  spans : Array[Span]?
+  segments : Array[Segment]?
+  original_supervised_tokens : Int?
+} derive(@json.FromJson)
+pub fn PreprocessedRow::from_json(Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
+
+pub(all) struct Report {
+  contract : String
+  status : String
+  sample_count : Int
+  token_count : Int
+  supervised_tokens : Int
+  error_count : Int
+  warning_count : Int
+  unknown_count : Int
+  samples : Array[SampleReport]
+  findings : Array[Finding]
+} derive(ToJson)
+pub fn Report::to_json(Self) -> Json
+
+pub(all) struct Sample {
+  id : String
+  input_ids : Array[Int]
+  labels : Array[Int]
+  attention_mask : Array[Int]
+  spans : Array[Span]
+  segments : Array[Segment]
+  original_supervised_tokens : Int?
+} derive(ToJson, @json.FromJson)
+pub fn Sample::from_json(Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
+pub fn Sample::to_json(Self) -> Json
+
+pub(all) struct SampleDelta {
+  sample_id : String
+  change : String
+  before_supervised : Int?
+  after_supervised : Int?
+  supervised_delta : Int?
+} derive(ToJson)
+pub fn SampleDelta::to_json(Self) -> Json
+
+pub(all) struct SampleReport {
+  id : String
+  tokens : Int
+  supervised_tokens : Int
+  supervised_ratio : Double
+  roles : Array[String]
+  states : Array[String]
+  source_ids : Array[String]
+  findings : Array[Finding]
+} derive(ToJson)
+pub fn SampleReport::to_json(Self) -> Json
+
+pub(all) struct Segment {
+  start : Int
+  end : Int
+  source_id : String
+} derive(ToJson, @json.FromJson)
+pub fn Segment::from_json(Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
+pub fn Segment::to_json(Self) -> Json
+
+pub(all) struct Span {
+  start : Int
+  end : Int
+  role : String
+} derive(ToJson, @json.FromJson)
+pub fn Span::from_json(Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
+pub fn Span::to_json(Self) -> Json
+
+// Type aliases
+
+// Traits
