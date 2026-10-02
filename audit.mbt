@@ -89,6 +89,9 @@ fn check_sample(s : Sample, allowed : Array[String]) -> SampleReport {
     }
   }
   for segment in s.segments {
+    if segment.start > 0 && segment.start < n && segment.start < s.labels.length() && s.labels[segment.start] != -100 {
+      findings.push(finding("PACKING_CROSS_SOURCE_TARGET", "error", s.id, Some(segment.start), "Packed source begins with a supervised target; plain causal attention would predict it from the previous source"))
+    }
     if segment.start < 0 || segment.end <= segment.start || segment.end > n || segment.source_id == "" {
       findings.push(finding("SEGMENT_INVALID", "error", s.id, None, "Source interval is invalid or source_id is empty"))
       continue
@@ -133,6 +136,9 @@ fn check_sample(s : Sample, allowed : Array[String]) -> SampleReport {
   if missing_role { findings.push(finding("ROLE_PROVENANCE_MISSING", "unknown", s.id, None, "Role coverage is incomplete; uncovered token policy cannot be verified")) }
   if missing_source { findings.push(finding("SOURCE_PROVENANCE_MISSING", "unknown", s.id, None, "Source coverage is incomplete; packed provenance cannot be verified")) }
   if n > 0 && s.labels.length() == n && supervised == 0 { findings.push(finding("NO_SUPERVISION", "warning", s.id, None, "All labels are ignored; sample has no declared supervised tokens")) }
+  if n > 0 && !s.labels.is_empty() && s.labels[0] != -100 {
+    findings.push(finding("FIRST_TOKEN_NOT_PREDICTED", "warning", s.id, Some(0), "Under model-internal causal shift, label position zero is not predicted"))
+  }
   match s.original_supervised_tokens {
     Some(before) => {
       if before < 0 || before < supervised { findings.push(finding("INVALID_BASELINE", "error", s.id, None, "Original supervised count cannot be negative or less than current count")) }
@@ -156,13 +162,27 @@ pub fn audit(doc : Document) -> Report {
   for role in doc.allowed_roles {
     if role != "assistant" && role != "user" && role != "system" && role != "tool" { findings.push(finding("INVALID_POLICY_ROLE", "error", "", None, "Policy includes an unsupported role")) }
   }
+  if doc.samples.length() > 200 {
+    findings.push(finding("RESOURCE_LIMIT", "error", "", None, "At most 200 samples may be audited in one document"))
+  }
   if doc.samples.is_empty() { findings.push(finding("EMPTY_DATASET", "error", "", None, "Dataset contains no samples")) }
   let seen : Map[String, Bool] = Map([])
-  if doc.contract == "causal-lm-unshifted-v1" {
+  if doc.contract == "causal-lm-unshifted-v1" && doc.samples.length() <= 200 {
     for s in doc.samples {
       if seen.contains(s.id) || s.id == "" { findings.push(finding("INVALID_SAMPLE_ID", "error", s.id, None, "Sample IDs must be nonempty and unique")) }
       seen[s.id] = true
       if s.input_ids.length() > 10000 || s.spans.length() > 10000 || s.segments.length() > 10000 { findings.push(finding("RESOURCE_LIMIT", "error", s.id, None, "Interactive audit supports at most 10000 tokens and intervals per sample")); continue }
+      let mut interval_work = 0
+      for span in s.spans {
+        if span.start >= 0 && span.end > span.start && span.end <= s.input_ids.length() { interval_work = interval_work + span.end - span.start }
+      }
+      for segment in s.segments {
+        if segment.start >= 0 && segment.end > segment.start && segment.end <= s.input_ids.length() { interval_work = interval_work + segment.end - segment.start }
+      }
+      if interval_work > 100000 || token_count + s.input_ids.length() > 100000 {
+        findings.push(finding("RESOURCE_LIMIT", "error", s.id, None, "Interval expansion or document token budget exceeded"))
+        continue
+      }
       let report = check_sample(s, doc.allowed_roles)
       token_count = token_count + report.tokens
       supervised_tokens = supervised_tokens + report.supervised_tokens
