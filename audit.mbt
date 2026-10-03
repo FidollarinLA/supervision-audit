@@ -342,6 +342,16 @@ fn check_sample(s : Sample, allowed : Array[String]) -> SampleReport {
       }
     None => ()
   }
+  // Indexed errors also include provenance and packed-boundary diagnostics.
+  // Apply them after computing label states so visualization cannot hide them.
+  for f in findings {
+    if f.severity == "error" {
+      match f.token_index {
+        Some(i) => if i >= 0 && i < n { states[i] = "error" }
+        None => ()
+      }
+    }
+  }
   {
     id: s.id,
     tokens: n,

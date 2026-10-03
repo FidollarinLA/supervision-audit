@@ -37,6 +37,15 @@ npm run dev
 4. 导入自己的 JSON 或 JSONL，确认监督策略，再运行审计。
 5. 导出完整 JSON 报告。大样本按每页 120 个 token 查看，问题列表最多显示前 200 项；报告保留完整结果。
 
+<details>
+<summary>查看实际界面截图（合成预训练数据）</summary>
+
+![逐 token 审计界面](docs/assets/workbench.jpg)
+
+![修复前后对比](docs/assets/comparison.jpg)
+
+</details>
+
 本地服务器只提供静态资源。训练文件由浏览器读取并在浏览器中处理，没有上传接口，不调用第三方模型或分析服务。数据仍可能包含私密内容，分享导出报告前请自行核对。
 
 ## 最小输入示例
