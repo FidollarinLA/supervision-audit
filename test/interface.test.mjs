@@ -44,6 +44,12 @@ test('interface renders engine evidence, navigates tokens and clears stale resul
  get('tokens').children[0].onclick();assert.match(get('detail').textContent,/位置 #120/);
  get('next-tokens').onclick();assert.equal(get('tokens').children.length,60);assert.equal(get('next-tokens').disabled,true);
  get('previous-tokens').onclick();assert.equal(get('tokens').children.length,120);
+ large.samples.push(structuredClone(large.samples[0]));
+ get('input').value=JSON.stringify(large);get('run').onclick();get('tokens').children[0].onclick();
+ assert.match(get('detail').textContent,/样本 ID 重复/);
+ large.contract='unsupported';get('input').value=JSON.stringify(large);get('run').onclick();
+ assert.equal(get('tokens').children.length,0);assert.equal(get('token-page').textContent,'');
+ assert.equal(get('ratio').textContent,'—');assert.equal(get('next-tokens').disabled,true);
  get('input').value='{';get('run').onclick();
  assert.match(get('notice').textContent,/无法审计/);assert.equal(get('tokens').children.length,0);assert.equal(get('findings').children.length,0);
  get('export').onclick();assert.match(get('notice').textContent,/请先成功运行审计/);

@@ -93,11 +93,21 @@ function selectSample(index, tokenIndex) {
   tokenStart = tokenIndex == null ? 0 : Math.floor(tokenIndex / PAGE_SIZE) * PAGE_SIZE;
   renderSample(); if (tokenIndex != null) inspect(tokenIndex);
 }
+function sampleData(id) {
+  const matches = input.samples.filter(item => item.id === id);
+  return matches.length === 1 ? matches[0] : null;
+}
 function renderSample() {
   const sample = result?.report.samples[currentSample];
   $('tokens').replaceChildren(); $('role-track').replaceChildren();
-  if (!sample) { $('detail').textContent = '没有可查看的样本；请查看数据集级别的问题。'; return; }
-  const data = input.samples.find(item => item.id === sample.id);
+  if (!sample) {
+    $('detail').textContent = '没有可查看的样本；请查看数据集级别的问题。';
+    $('ratio').textContent = '—'; $('progress').style.width = '0%';
+    $('token-page').textContent = '';
+    $('previous-tokens').disabled = true; $('next-tokens').disabled = true;
+    return;
+  }
+  const data = sampleData(sample.id);
   const end = Math.min(sample.tokens, tokenStart + PAGE_SIZE);
   let prior, groups = [];
   for (const role of sample.roles.slice(tokenStart, end)) {
@@ -123,7 +133,8 @@ function renderSample() {
 }
 function inspect(index) {
   const sample = result.report.samples[currentSample];
-  const data = input.samples.find(item => item.id === sample.id);
+  const data = sampleData(sample.id);
+  if (!data) { $('detail').textContent = '样本 ID 重复或无法定位，不能展示唯一的原始 token 证据。请先修正 ID。'; return; }
   [...$('tokens').children].forEach((node, local) => node.classList.toggle('selected', local + tokenStart === index));
   $('detail').textContent = `位置 #${index} · Token ${data?.input_ids[index]} · Label ${data?.labels[index] ?? '缺失'} · Attention ${data?.attention_mask[index] ?? '缺失'} · ${roleName[sample.roles[index]] || sample.roles[index]} · ${stateName[sample.states[index]]} · 来源 ${sample.source_ids[index]}`;
 }
