@@ -1,0 +1,16 @@
+{
+  "contract": "causal-lm-unshifted-v1",
+  "allowed_roles": ["text"],
+  "samples": [{
+    "id": "pretrain-packed-001",
+    "input_ids": [101, 31, 32, 102, 41, 42, 0, 0],
+    "labels": [-100, 31, 32, -100, 41, 42, -100, -100],
+    "attention_mask": [1, 1, 1, 1, 1, 1, 0, 0],
+    "spans": [{"start": 0, "end": 8, "role": "text"}],
+    "segments": [
+      {"start": 0, "end": 3, "source_id": "document-A"},
+      {"start": 3, "end": 8, "source_id": "document-B"}
+    ],
+    "original_supervised_tokens": null
+  }]
+}

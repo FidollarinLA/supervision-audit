@@ -115,7 +115,8 @@ fn check_sample(s : Sample, allowed : Array[String]) -> SampleReport {
     if span.role != "system" &&
       span.role != "user" &&
       span.role != "assistant" &&
-      span.role != "tool" {
+      span.role != "tool" &&
+      span.role != "text" {
       findings.push(
         finding(
           "UNKNOWN_ROLE",
@@ -390,7 +391,8 @@ pub fn audit(doc : Document) -> Report {
     if role != "assistant" &&
       role != "user" &&
       role != "system" &&
-      role != "tool" {
+      role != "tool" &&
+      role != "text" {
       findings.push(
         finding(
           "INVALID_POLICY_ROLE",

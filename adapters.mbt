@@ -56,7 +56,13 @@ pub fn audit_jsonl(text : String, policy_text : String) -> String {
       allowed_roles: allowed,
       samples,
     }
-    let result : Json = { "ok": true, "report": audit(doc).to_json() }
+    // Return the exact normalized document used by the core. Viewers can inspect
+    // JSONL evidence without independently reconstructing optional metadata.
+    let result : Json = {
+      "ok": true,
+      "document": doc.to_json(),
+      "report": audit(doc).to_json(),
+    }
     result.stringify()
   } catch {
     error => error_json("JSONL decoding failed: \{error.to_string()}")
