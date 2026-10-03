@@ -27,6 +27,16 @@ test('pretraining repair resolves padding and packed boundary evidence',()=>{
  assert.equal(result.comparison.after_status,'pass');
  assert.deepEqual(result.comparison.resolved_findings.map(f=>f.code).sort(),['PACKING_CROSS_SOURCE_TARGET','PADDING_SUPERVISED']);
 });
+test('large diagnostic sets retain every resolution and arbitrary sample IDs',()=>{
+ const before={contract:'causal-lm-unshifted-v1',allowed_roles:['text'],samples:[{id:'odd/\"id\nwith separators',input_ids:Array(3000).fill(1),labels:[-100,...Array(2999).fill(1)],attention_mask:[1,...Array(2999).fill(0)],spans:[{start:0,end:3000,role:'text'}],segments:[{start:0,end:3000,source_id:'source'}]}]};
+ const after=structuredClone(before);after.samples[0].attention_mask.fill(1);
+ const result=JSON.parse(compare_json(JSON.stringify(before),JSON.stringify(after))).comparison;
+ assert.equal(result.new_findings.length,0);
+ assert.equal(result.resolved_findings.length,2999);
+ assert.equal(result.after_status,'pass');
+ assert.equal(result.samples[0].change,'stable');
+ assert.equal(result.resolved_findings.at(-1).token_index,2999);
+});
 test('excessive interval expansion is refused instead of producing a partial pass',()=>{
  const d=JSON.parse(load('healthy'));const s=d.samples[0];s.input_ids=Array(10000).fill(1);s.labels=Array(10000).fill(-100);s.attention_mask=Array(10000).fill(1);s.spans=Array.from({length:11},()=>({start:0,end:10000,role:'assistant'}));s.segments=[];
  const normal=JSON.parse(load('healthy'));

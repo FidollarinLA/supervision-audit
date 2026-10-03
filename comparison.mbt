@@ -23,11 +23,16 @@ pub(all) struct Comparison {
 pub extend Comparison with ToJson::{to_json}
 
 ///|
-fn same_finding(a : Finding, b : Finding) -> Bool {
-  a.code == b.code &&
-  a.sample_id == b.sample_id &&
-  a.token_index == b.token_index &&
-  a.severity == b.severity
+fn finding_key(f : Finding) -> String {
+  // JSON encodes arbitrary sample IDs without delimiter collisions. Messages
+  // are deliberately excluded: comparison identifies the diagnostic location.
+  let key : Json = {
+    "code": f.code,
+    "sample": f.sample_id,
+    "token": f.token_index.to_json(),
+    "severity": f.severity,
+  }
+  key.stringify()
 }
 
 ///|
@@ -35,15 +40,14 @@ fn same_finding(a : Finding, b : Finding) -> Bool {
 /// A change in coverage is not itself a claim about model quality.
 pub fn compare(before : Report, after : Report) -> Comparison {
   let samples : Array[SampleDelta] = []
+  let after_samples : Map[String, SampleReport] = Map([])
+  let before_ids : Map[String, Bool] = Map([])
+  for a in after.samples {
+    after_samples[a.id] = a
+  }
   for b in before.samples {
-    let mut found : SampleReport? = None
-    for a in after.samples {
-      if a.id == b.id {
-        found = Some(a)
-        break
-      }
-    }
-    match found {
+    before_ids[b.id] = true
+    match after_samples.get(b.id) {
       Some(a) =>
         samples.push({
           sample_id: b.id,
@@ -68,7 +72,7 @@ pub fn compare(before : Report, after : Report) -> Comparison {
     }
   }
   for a in after.samples {
-    if !before.samples.any(fn(b) { b.id == a.id }) {
+    if !before_ids.contains(a.id) {
       samples.push({
         sample_id: a.id,
         change: "added",
@@ -78,15 +82,23 @@ pub fn compare(before : Report, after : Report) -> Comparison {
       })
     }
   }
+  let before_keys : Map[String, Bool] = Map([])
+  let after_keys : Map[String, Bool] = Map([])
+  for f in before.findings {
+    before_keys[finding_key(f)] = true
+  }
+  for f in after.findings {
+    after_keys[finding_key(f)] = true
+  }
   {
     before_status: before.status,
     after_status: after.status,
     samples,
     new_findings: after.findings.filter(fn(a) {
-      !before.findings.any(fn(b) { same_finding(a, b) })
+      !before_keys.contains(finding_key(a))
     }),
     resolved_findings: before.findings.filter(fn(b) {
-      !after.findings.any(fn(a) { same_finding(a, b) })
+      !after_keys.contains(finding_key(b))
     }),
   }
 }
