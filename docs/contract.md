@@ -26,3 +26,11 @@ JSON 中可选证据 token_index 缺失表示样本或文档级问题。ID 稳�
 ## JSONL
 
 每行包含 input_ids、labels、attention_mask；id、spans、segments、original_supervised_tokens 可选。缺少 id 时按物理行号生成 row-N；缺少 spans 或 segments 时保留未知证据状态。空行忽略，损坏行使整个导入失败。该适配器接收预处理后的训练记录，不执行 tokenizer、模板生成或训练器逻辑。
+
+## 纯文本预训练与 JSONL 可视化
+
+普通语料使用 `text` 角色并将 `allowed_roles` 设置为 `["text"]`。`text` 是调用者声明的语料类型，不由工具从 token 推测。来源 segments 仍需由预处理流程提供。不要为缺失的角色或来源补造区间。
+
+`audit_jsonl(text, policy_text)` 返回 `{ok, document, report}`；document 是 MoonBit 实际审计的标准化输入，界面直接使用它定位原始 token。原有 report 字段继续保留。document 的缺失角色与来源标准化为空数组，缺失 ID 按原始行号生成。
+
+本契约采用“忽略后一个来源首个目标”的拼接策略。对其他允许跨文档目标的训练策略，这一诊断不适合作为通用质量结论。忽略边界目标也不会阻断后续 token 的跨文档注意力；本工具尚不分析注意力隔离矩阵。
