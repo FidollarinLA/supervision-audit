@@ -74,8 +74,8 @@ JSONL 每行是一个已分词的样本，省略外层 `contract`、`allowed_rol
 ## 命令行与训练前检查
 
 ```sh
-# 正常预训练数据：退出码 0
-node cli.mjs examples/pretraining.json
+# 正常预训练数据：退出码 0；终端显示中文摘要
+node cli.mjs examples/pretraining.json --summary
 
 # 有故障的预训练数据：退出码 1
 node cli.mjs examples/pretraining-boundary.json
@@ -93,6 +93,10 @@ node cli.mjs examples/pretraining.json --baseline examples/pretraining-boundary.
 | `1` | 审计发现错误 |
 | `2` | 文件、JSON 或命令输入错误 |
 | `3` | 需要人工复核，包括证据不足与提示项 |
+
+`--summary` 将中文摘要写入标准错误流，标准输出仍只包含完整 JSON；配合 `--out report.json` 可保存报告并在终端查看摘要。摘要列出审计状态、声明监督标签数和前五项问题，完整报告不截断。声明标签数不等于模型实际损失项数量。比较摘要明确显示前后审计状态，即使新数据失败，比较成功执行仍返回 `0`。
+
+参数拼写错误、重复选项、缺少参数值会返回 `2`。`--roles` 仅用于 JSONL；比较模式只接受 JSON 文档，不能与 `--jsonl` 混用，避免配置被静默忽略。
 
 接入 CI 时可以直接使用审计退出码阻止有错误的数据继续进入训练。比较模式的 `0` **不代表新数据更好**。JSON 报告中 `status` 为 `pass`、`review` 或 `fail`；`findings` 包含问题代码、严重程度、样本 ID、token 索引和说明。
 
