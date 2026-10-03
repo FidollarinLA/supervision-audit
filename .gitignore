@@ -4,3 +4,5 @@ node_modules/
 web/engine.js
 artifacts/
 .DS_Store
+.venv-reference/
+__pycache__/

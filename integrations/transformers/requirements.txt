@@ -1,0 +1,4 @@
+# Optional reference integration; not a dependency of the MoonBit library or UI.
+transformers==4.57.1
+tokenizers==0.22.1
+numpy==2.3.4

@@ -38,3 +38,13 @@
 验证：MoonBit JS `check --deny-warn`、18 项测试通过；`moon info`、`moon fmt` 完成且未改变接口；`npm run build`、23 项 Node 测试全部通过；`git diff --check` 通过。本轮只改 CLI 与文档，不改核心算法，因此未重复其他后端测试，也未将本地结果声称为远端 CI 结果。
 
 限制与下一步：未添加报告版本字段；真实 tokenizer/collator 流程适配、参考损失掩码验证、Mooncakes 发布及外部试用仍待完成。本次为有界的命令行可用性增量，不代表真实训练验证或赛事审核通过。
+
+### 2026-10-04 第二轮：固定版本预处理流程导出
+
+开始时工作区干净，保留上一轮本地提交 c4c7933。完成优先级一中的小型 tokenizer/collator 实际调用增量：Transformers 4.57.1、Tokenizers 0.22.1、NumPy 2.3.4，以仓库自写三句文本建立本地 WordLevel 词表，调用真实 collator 导出标签、补齐及来源信息。没有下载模型、复制外部语料或改写 collator 标签来强行通过审计。
+
+交付：可选 Python 导出工具、三条语料及可重建输出、版本/词表/语料散列清单、说明文档、四项 MoonBit 桥接集成测试和两项 Python 生成测试。Python 重建测试禁止 socket 连接并逐字节比对；常规 Node 测试直接读取已提交结果，不需要额外 Python 依赖。CI 增加 Ubuntu 下的可选依赖安装与离线重建步骤，尚未推送或运行远端 CI。
+
+实际验证：macOS arm64、Python 3.14.2；两个 Python 测试通过；MoonBit JS check --deny-warn 与 18 项测试通过；moon info、moon fmt 后接口无变化；npm build 和 27 项 Node 测试通过；CI YAML 可解析；git diff --check 通过。CLI 实测退出码 3，24 个位置、13 个声明监督标签、0 错误、3 个首位置提示、0 未知证据，与文档一致。故障注入覆盖 Padding 标签、提前位移及缺失来源。
+
+限制：仅完成合成文本上的真实预处理工具调用。未运行模型或参考损失函数，没有声称完成端到端训练验证；生产词表、模板、packing、截断、assistant-only 策略仍需适配。三项核心依赖固定版本，传递依赖未完整锁定。环境和导出报告留在忽略目录，不进入公开仓库。后续优先补模型内部 shift 与独立参考损失掩码验证。

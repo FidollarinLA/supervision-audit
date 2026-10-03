@@ -4,7 +4,7 @@
 
 SupervisionAudit 是用 MoonBit 编写的训练数据审计工具。它读取已经分词的预处理结果，检查标签、Padding、监督范围和文档拼接边界，把问题定位到具体样本与 token。支持纯文本预训练、继续预训练，以及符合相同标签契约的对话微调数据。
 
-> 当前是可运行原型，尚未完成赛事验收、真实训练流程验证或 Mooncakes 发布。演示数据均为合成数据。工具不执行模型训练，也不证明模型效果。
+> 当前是可运行原型，尚未完成赛事验收、端到端训练验证或 Mooncakes 发布。演示语料均为合成文本；已补充固定版本 tokenizer / collator 的真实调用与导出验证。工具不执行模型训练，也不证明模型效果。
 
 ## 它解决什么问题
 
@@ -99,6 +99,18 @@ node cli.mjs examples/pretraining.json --baseline examples/pretraining-boundary.
 参数拼写错误、重复选项、缺少参数值会返回 `2`。`--roles` 仅用于 JSONL；比较模式只接受 JSON 文档，不能与 `--jsonl` 混用，避免配置被静默忽略。
 
 接入 CI 时可以直接使用审计退出码阻止有错误的数据继续进入训练。比较模式的 `0` **不代表新数据更好**。JSON 报告中 `status` 为 `pass`、`review` 或 `fail`；`findings` 包含问题代码、严重程度、样本 ID、token 索引和说明。
+
+## 从实际预处理流程导入
+
+仓库包含 Transformers 4.57.1 tokenizer / collator 实际生成的微型批次，可直接检查：
+
+```sh
+node cli.mjs examples/transformers/batch.jsonl --jsonl --roles text --summary
+```
+
+预期为“需复核”（退出码 `3`）：保留原始 collator 标签后，三个样本的首位置都会出现“不产生预测”的提示，Padding 标签正确。没有为了得到“通过”而改写标签。语料仍为本仓库合成文本，不代表生产数据验证。
+
+[重建步骤、来源与边界](docs/transformers-integration.md)包括固定版本依赖、离线生成、结果逐字节对照和故障注入测试。运行现有导出结果不需要安装 Python 或训练框架。
 
 ## MoonBit 核心与可复用接口
 

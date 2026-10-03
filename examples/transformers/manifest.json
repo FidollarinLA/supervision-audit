@@ -1,0 +1,35 @@
+{
+  "fixture_schema": "transformers-collator-fixture-v1",
+  "packages": {
+    "transformers": "4.57.1",
+    "tokenizers": "0.22.1",
+    "numpy": "2.3.4"
+  },
+  "corpus_sha256": "d3263d105a4fefdadfbfa29421dbf21f5829d09b64637c01666e867fdc2a8749",
+  "corpus_origin": "Repository-authored synthetic text; Apache-2.0",
+  "tokenizer": "WordLevel + WhitespaceSplit; local vocabulary; no special tokens added",
+  "vocabulary": {
+    "[PAD]": 0,
+    "[UNK]": 1,
+    "Check": 2,
+    "MoonBit": 3,
+    "before": 4,
+    "checks": 5,
+    "data": 6,
+    "labels": 7,
+    "next": 8,
+    "padding": 9,
+    "run": 10,
+    "the": 11,
+    "training": 12
+  },
+  "collator": {
+    "mlm": false,
+    "pad_to_multiple_of": 8,
+    "return_tensors": "np",
+    "padding_side": "right",
+    "pad_token_id": 0
+  },
+  "label_transformations": [],
+  "metadata": "text role declared for the row; generated padding has its own source segment"
+}
