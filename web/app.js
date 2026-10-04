@@ -20,7 +20,7 @@ const labels = {
 };
 const PAGE_SIZE = 120;
 let result = null, input = null, currentSample = 0, tokenStart = 0;
-let baselineText = null, baselineName = '', revision = 0;
+let baselineText = null, baselineName = '', revision = 0, baselineRevision = 0;
 function element(tag, cls, text) {
   const node = document.createElement(tag);
   if (cls) node.className = cls;
@@ -30,6 +30,13 @@ function element(tag, cls, text) {
 function clearComparison() {
   $('comparison-panel').hidden = true;
   $('comparison').replaceChildren();
+}
+function clearBaseline() {
+  // Clearing/replacing a baseline invalidates its pending read independently
+  // of edits to the current audit input.
+  baselineRevision++;
+  baselineText = null; baselineName = ''; $('baseline').value = '';
+  clearComparison();
 }
 function invalidate(message = '输入已修改，请重新运行审计。') {
   revision++;
@@ -204,7 +211,7 @@ async function loadPreset() {
     if (!response.ok) throw new Error('示例加载失败');
     const data = await response.json();
     if (ticket !== revision) return;
-    baselineText = null; $('format').value = 'json';
+    clearBaseline(); $('format').value = 'json';
     $('input').value = JSON.stringify(data, null, 2); run();
   } catch (error) { if (ticket === revision) invalidate(error.message); }
 }
@@ -217,7 +224,7 @@ $('sample').onchange = () => selectSample(Number($('sample').value));
 $('filter').onchange = renderFindings;
 $('previous-tokens').onclick = () => { if (!result || !tokenStart) return; tokenStart -= PAGE_SIZE; renderSample(); };
 $('next-tokens').onclick = () => { if (!result || tokenStart + PAGE_SIZE >= result.report.samples[currentSample]?.tokens) return; tokenStart += PAGE_SIZE; renderSample(); };
-$('clear-baseline').onclick = () => { baselineText = null; $('baseline').value = ''; clearComparison(); };
+$('clear-baseline').onclick = clearBaseline;
 $('file').onchange = async () => {
   const file = $('file').files[0]; if (!file) return;
   invalidate('正在读取本地数据…'); const ticket = revision;
@@ -229,16 +236,21 @@ $('file').onchange = async () => {
   } catch (error) { if (ticket === revision) invalidate('文件读取失败：' + error.message); }
 };
 $('baseline').onchange = async () => {
-  const file = $('baseline').files[0]; if (!file) return;
-  baselineText = null; clearComparison(); const ticket = revision;
+  const file = $('baseline').files[0];
+  if (!file) { clearBaseline(); return; }
+  baselineText = null; baselineName = ''; clearComparison();
+  const ticket = revision, baselineTicket = ++baselineRevision;
+  const isCurrent = () => ticket === revision && baselineTicket === baselineRevision;
   if (file.size > 1048576) { $('notice').textContent = '基线文件超过 1 MiB。'; return; }
   try {
-    const text = await file.text(); if (ticket !== revision) return;
+    const text = await file.text(); if (!isCurrent()) return;
     baselineText = text; baselineName = file.name;
+    $('notice').textContent = '';
     if (result) renderComparison(); else $('notice').textContent = '已读取基线，请先运行当前数据。';
-  } catch (error) { $('notice').textContent = '基线读取失败：' + error.message; }
+  } catch (error) { if (isCurrent()) $('notice').textContent = '基线读取失败：' + error.message; }
 };
 $('compare-demo').onclick = async () => {
+  clearBaseline();
   invalidate('正在载入修复演示…'); const ticket = revision;
   try {
     const responses = await Promise.all(['pretraining-boundary', 'pretraining'].map(name => fetch('./examples/' + name + '.json')));
