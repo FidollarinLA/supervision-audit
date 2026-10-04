@@ -12,6 +12,7 @@ pub extend SampleDelta with ToJson::{to_json}
 
 ///|
 pub(all) struct Comparison {
+  schema_version : String
   before_status : String
   after_status : String
   samples : Array[SampleDelta]
@@ -91,6 +92,7 @@ pub fn compare(before : Report, after : Report) -> Comparison {
     after_keys[finding_key(f)] = true
   }
   {
+    schema_version: "supervision-audit/comparison/v1",
     before_status: before.status,
     after_status: after.status,
     samples,

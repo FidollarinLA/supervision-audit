@@ -6,7 +6,7 @@ import {audit_json} from '../web/engine.js';
 const load=name=>JSON.parse(readFileSync(new URL('../examples/'+name+'.json',import.meta.url),'utf8'));
 const run=doc=>JSON.parse(audit_json(JSON.stringify(doc)));
 for(const [name,status,code] of [['healthy','pass',null],['role-leak','fail','ROLE_POLICY_VIOLATION'],['padding-leak','fail','PADDING_SUPERVISED'],['packing-conflict','fail','SOURCE_OVERLAP'],['lost-supervision','review','SUPERVISION_REDUCED'],['missing-provenance','review','ROLE_PROVENANCE_MISSING']]){
- test('fixture '+name,()=>{const r=run(load(name));assert.equal(r.ok,true);assert.equal(r.report.status,status);if(code)assert.ok(r.report.findings.some(f=>f.code===code));});
+ test('fixture '+name,()=>{const r=run(load(name));assert.equal(r.ok,true);assert.equal(r.report.schema_version,'supervision-audit/report/v1');assert.equal(r.report.status,status);if(code)assert.ok(r.report.findings.some(f=>f.code===code));});
 }
 test('JSON null and omitted baseline produce identical reports',()=>{const d=load('healthy');const a=run(d);delete d.samples[0].original_supervised_tokens;assert.deepEqual(run(d),a);});
 test('bad input and unsupported label contracts fail clearly',()=>{assert.equal(JSON.parse(audit_json('{')).ok,false);const d=load('healthy');d.contract='shifted';assert.equal(run(d).report.status,'fail');assert.equal(run(d).report.samples.length,0);});

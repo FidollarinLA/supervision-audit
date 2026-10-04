@@ -80,3 +80,13 @@
 验证：新增六个异步交错场景，覆盖后选优先、清除、过期错误、超限替换、输入修改及真实错误恢复；完整 Node 测试 35 项通过（包含父测试与子测试）。MoonBit JS check --deny-warn、22 项测试、moon info、moon fmt、npm build、git diff --check 通过，生成接口无变化。本轮通过可控读取顺序的界面测试复现竞态，未声称新增真实浏览器或远端 CI 验证，也未重复无改动的模型实验。
 
 README 和路线已记录行为。后台 worker、取消计算和大文件流式处理尚未完成；本修复只避免过期的文件读取污染比较结果，不会取消底层 File.text() 的读取工作。保留有意义的本地提交，不涉及报名资料或赛事承诺。
+
+### 2026-10-05 第一轮：导出报告格式版本
+
+开始时工作区干净，基于 9e62afb。本轮完成报告版本待办：MoonBit Report.schema_version 为 supervision-audit/report/v1，Comparison.schema_version 为 supervision-audit/comparison/v1。两种输出明确区分，训练输入 contract 和原计数/状态语义不变，错误结果仍没有有效报告。
+
+验证覆盖：已有回归用例检查通过、失败、需复核报告的版本；CLI 标准输出、JSONL 文件导出和比较结果保留各自版本；界面测试实际读取导出 Blob，确认格式版本、训练契约和预测目标数共同保留。报告读取文档中的示例已执行验证：接受 v1，拒绝无版本、未来版本及失败结果。文档明确这不是完整 JSON 校验器，也不提供自动报告升级。
+
+实际检查：MoonBit JS check --deny-warn 通过；js / wasm-gc / native 各 22 项测试通过；moon info、moon fmt 完成；生成接口仅 Report / Comparison 各新增 schema_version : String；npm build 和 35 项 Node 测试通过；git diff --check 通过。未修改损失计算或训练夹具，未重复模型参考实验，未运行远端 CI。
+
+交付说明：新增 docs/report-format.md，记录同主版本允许的增量变化、未知版本拒绝自动解释、无版本旧文件保留或以原始数据重新审计，以及直接构造 MoonBit 报告结构的调用方迁移要求。README、输入契约与路线同步。版本标记不等于精确构建号、真实性证明或赛事验收结论；历史报告导入、自动迁移和机器可读 JSON Schema 仍未实现。

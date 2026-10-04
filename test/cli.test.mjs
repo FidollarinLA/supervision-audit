@@ -16,6 +16,7 @@ test('summary preserves machine JSON and all audit exit statuses', () => {
     assert.equal(original.stderr, '');
     assert.match(shown.stderr, new RegExp(`审计结果：${label}`));
     const report = JSON.parse(shown.stdout).report;
+    assert.equal(report.schema_version,'supervision-audit/report/v1');
     assert.ok(shown.stderr.includes(`声明监督标签 ${report.supervised_tokens}`));
     assert.ok(shown.stderr.includes(`位移后预测目标 ${report.prediction_targets}`));
   }
@@ -25,6 +26,7 @@ test('comparison summary does not present successful execution as audit pass', (
   const result = run(['examples/role-leak.json', '--baseline', 'examples/healthy.json', '--summary']);
   assert.equal(result.status, 0);
   assert.equal(JSON.parse(result.stdout).comparison.after_status, 'fail');
+  assert.equal(JSON.parse(result.stdout).comparison.schema_version, 'supervision-audit/comparison/v1');
   assert.match(result.stderr, /通过 → 失败/);
   assert.match(result.stderr, /不表示数据通过审计/);
 });
@@ -59,6 +61,7 @@ test('summary works with report files, JSONL and malformed JSON', () => {
     assert.equal(result.status, 0, result.stderr);
     assert.equal(result.stdout, '');
     assert.equal(JSON.parse(readFileSync(output, 'utf8')).report.status, 'pass');
+    assert.equal(JSON.parse(readFileSync(output, 'utf8')).report.schema_version, 'supervision-audit/report/v1');
     assert.match(result.stderr, /审计结果：通过/);
     const bad = join(dir, 'bad.json');
     writeFileSync(bad, '{');

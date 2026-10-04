@@ -48,4 +48,4 @@ JSON 中可选证据 token_index 缺失表示样本或文档级问题。ID 稳�
 
 固定版本微型模型的损失与梯度对应验证见 [模型损失实验](model-loss-reference.md)。该计数按本契约计算，不能用于证明其他模型、注意力机制或损失归一化实现的行为。
 
-兼容性：JSON 新字段为增量信息，旧计数字段与比较中的 before/after_supervised 语义不变。MoonBit 公开报告结构增加成员，直接构造 `Report` / `SampleReport` 字面量的源码调用方需补充 `prediction_targets`；调用 `audit` 获取报告的用法不变。报告版本字段仍是独立待办。
+兼容性：JSON 新字段为增量信息，旧计数字段与比较中的 before/after_supervised 语义不变。MoonBit 公开报告结构增加成员，直接构造 `Report` / `SampleReport` 字面量的源码调用方需补充 `prediction_targets`；调用 `audit` 获取报告的用法不变。报告格式现在通过 `Report.schema_version` 和 `Comparison.schema_version` 标识；直接构造这两个结构时也需补充该字段。详见[报告格式与迁移](report-format.md)。

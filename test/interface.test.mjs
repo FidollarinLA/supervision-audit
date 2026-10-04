@@ -13,7 +13,11 @@ test('interface renders engine evidence, navigates tokens and clears stale resul
  const nodes=new Map();const get=id=>{if(!nodes.has(id))nodes.set(id,new Node());return nodes.get(id);};
  get('preset').value='role-leak';get('filter').value='all';
  const oldDocument=globalThis.document,oldFetch=globalThis.fetch;
- t.after(()=>{globalThis.document=oldDocument;globalThis.fetch=oldFetch;});
+ const oldCreateObjectURL=URL.createObjectURL,oldRevokeObjectURL=URL.revokeObjectURL;
+ let exported;
+ URL.createObjectURL=blob=>{exported=blob;return "blob:report-test";};
+ URL.revokeObjectURL=()=>{};
+ t.after(()=>{globalThis.document=oldDocument;globalThis.fetch=oldFetch;URL.createObjectURL=oldCreateObjectURL;URL.revokeObjectURL=oldRevokeObjectURL;});
  globalThis.document={getElementById:get,createElement:tag=>new Node(tag)};
  globalThis.fetch=async path=>({ok:true,json:async()=>JSON.parse(await readFile(new URL('../web/'+path,import.meta.url),'utf8'))});
  await import('../web/app.js');
@@ -56,6 +60,11 @@ test('interface renders engine evidence, navigates tokens and clears stale resul
  get('format').value='jsonl';get('policy').value='text';get('input').value=actualBatch;get('run').onclick();
  assert.equal(get('metrics').children[2].children[1].textContent,'13');
  assert.match(get('metrics').children[2].children[2].textContent,/位移后预测目标：10/);
+ get('export').onclick();
+ const downloaded=JSON.parse(await exported.text());
+ assert.equal(downloaded.report.schema_version,'supervision-audit/report/v1');
+ assert.equal(downloaded.report.contract,'causal-lm-unshifted-v1');
+ assert.equal(downloaded.report.prediction_targets,10);
  get('sample').value='2';get('sample').onchange();
  assert.match(get('target-note').textContent,/位移后预测目标：0/);
  get('input').oninput();assert.match(get('target-note').textContent,/无法计算/);

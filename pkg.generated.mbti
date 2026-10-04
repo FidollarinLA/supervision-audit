@@ -20,6 +20,7 @@ pub fn compare_json(String, String) -> String
 
 // Types and methods
 pub(all) struct Comparison {
+  schema_version : String
   before_status : String
   after_status : String
   samples : Array[SampleDelta]
@@ -57,6 +58,7 @@ pub(all) struct PreprocessedRow {
 pub fn PreprocessedRow::from_json(Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
 
 pub(all) struct Report {
+  schema_version : String
   contract : String
   status : String
   sample_count : Int

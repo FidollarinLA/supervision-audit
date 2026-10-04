@@ -100,7 +100,7 @@ node cli.mjs examples/pretraining.json --baseline examples/pretraining-boundary.
 
 参数拼写错误、重复选项、缺少参数值会返回 `2`。`--roles` 仅用于 JSONL；比较模式只接受 JSON 文档，不能与 `--jsonl` 混用，避免配置被静默忽略。
 
-接入 CI 时可以直接使用审计退出码阻止有错误的数据继续进入训练。比较模式的 `0` **不代表新数据更好**。JSON 报告中 `status` 为 `pass`、`review` 或 `fail`；`findings` 包含问题代码、严重程度、样本 ID、token 索引和说明。
+接入 CI 时可以直接使用审计退出码阻止有错误的数据继续进入训练。比较模式的 `0` **不代表新数据更好**。导出中的 `report.schema_version` 为 `supervision-audit/report/v1`，比较结果则使用 `comparison.schema_version`，详见[报告版本与旧数据处理](docs/report-format.md)。格式版本与训练输入契约是两回事。JSON 报告中 `status` 为 `pass`、`review` 或 `fail`；`findings` 包含问题代码、严重程度、样本 ID、token 索引和说明。
 
 ## 从实际预处理流程导入
 

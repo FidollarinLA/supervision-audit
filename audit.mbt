@@ -54,6 +54,7 @@ pub(all) struct SampleReport {
 
 ///|
 pub(all) struct Report {
+  schema_version : String
   contract : String
   status : String
   sample_count : Int
@@ -551,6 +552,7 @@ pub fn audit(doc : Document) -> Report {
     }
   }
   {
+    schema_version: "supervision-audit/report/v1",
     contract: doc.contract,
     status: if error_count > 0 {
       "fail"
