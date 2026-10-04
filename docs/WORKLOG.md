@@ -48,3 +48,15 @@
 实际验证：macOS arm64、Python 3.14.2；两个 Python 测试通过；MoonBit JS check --deny-warn 与 18 项测试通过；moon info、moon fmt 后接口无变化；npm build 和 27 项 Node 测试通过；CI YAML 可解析；git diff --check 通过。CLI 实测退出码 3，24 个位置、13 个声明监督标签、0 错误、3 个首位置提示、0 未知证据，与文档一致。故障注入覆盖 Padding 标签、提前位移及缺失来源。
 
 限制：仅完成合成文本上的真实预处理工具调用。未运行模型或参考损失函数，没有声称完成端到端训练验证；生产词表、模板、packing、截断、assistant-only 策略仍需适配。三项核心依赖固定版本，传递依赖未完整锁定。环境和导出报告留在忽略目录，不进入公开仓库。后续优先补模型内部 shift 与独立参考损失掩码验证。
+
+### 2026-10-04 第三轮：实际模型损失与梯度对照
+
+开始时工作区干净，基于 a8aeeeb 继续优先级一。本轮增加独立的可选模型参考测试：Transformers 4.57.1 + PyTorch 2.10.0，CPU 随机初始化 1 层/16 维/2 头 GPT-2，执行前向与反向，不下载权重、不更新参数。
+
+六项实验以独立 Python log-sum-exp 交叉熵（不调用框架损失/位移辅助函数）核对实际模型损失，容差 1e-6；逐位置核对最终 logits 的梯度。每个场景同时读取编译后的 MoonBit 审计结果。覆盖 collator 的 13 声明标签/10 实际目标、屏蔽首标签后损失不变、assistant-only、packing 边界、attention_mask 无法替代 Padding 标签屏蔽，以及仅有首标签时平均损失为 NaN 的边界。没有将最终 logits 的零梯度等同于输入 token 无梯度或注意力隔离。
+
+本地结果：macOS arm64、Python 3.14.2；6 项模型参考测试、2 项已有导出重建测试、27 项 Node 测试、18 项 MoonBit JS 测试通过；MoonBit check --deny-warn、moon info、moon fmt、npm build、git diff --check 通过。核心源码和生成接口无变化。CI YAML 可解析，新增 Ubuntu CPU PyTorch 安装及离线模型参考步骤；未推送，不能声称远端 CI 已通过。
+
+文档更新：新增 model-loss-reference.md，区分预训练边界策略与助手目标策略，记录独立计算、实际观察与适用范围；README、预处理文档、第三方说明和路线同步。PyTorch 是可选测试依赖，安装在忽略的 .venv-reference 中；正常运行 CLI/Web 无需 Python/PyTorch。
+
+限制与下一步：本次是微型随机模型的损失语义实验，不是生产模型或端到端训练效果验证。传递依赖仍未完整锁定。下一步将向用户明确展示有效预测目标数，改善零目标提示，同时保留原声明监督数量兼容；生产 tokenizer/模板/截断和授权真实数据仍待覆盖。

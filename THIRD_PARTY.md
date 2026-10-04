@@ -16,3 +16,5 @@ examples/ 的 token ID、区间和故障全部为本项目合成，没有来自�
 可选预处理集成（2026-10-04）：`integrations/transformers/` 调用 Transformers 4.57.1、Tokenizers 0.22.1 和 NumPy 2.3.4 的公开接口，不复制其实现；仅用于重建测试夹具，不是 MoonBit 核心或 Web 运行依赖。上游分别为 [Transformers](https://github.com/huggingface/transformers/tree/v4.57.1)（Apache-2.0）、[Tokenizers](https://github.com/huggingface/tokenizers/tree/v0.22.1)（Apache-2.0）和 [NumPy](https://github.com/numpy/numpy/tree/v2.3.4)（BSD-3-Clause；二进制发行包可能另含依赖许可，见安装包内说明）。不将这些依赖的许可证改称为本仓库许可证。
 
 `examples/transformers/corpus.jsonl` 是本仓库自写的三句合成文本，随项目采用 Apache-2.0；`batch.jsonl` 是真实分词器和 collator 生成的数组，来源、参数、词表及内容散列见同目录 `manifest.json`。没有下载模型权重、外部语料或真实用户数据；真实预处理调用不等于真实训练质量验证。
+
+可选模型损失实验另调用 [PyTorch 2.10.0](https://github.com/pytorch/pytorch/tree/v2.10.0)（BSD 风格许可证及其依赖许可，见上游 LICENSE）。微型 GPT-2 从 Transformers 配置在本地随机初始化，不下载模型权重，不复制上游实现；独立交叉熵判定器由本仓库编写。仅执行前向、反向观察，不更新参数、不宣称训练质量或收敛。

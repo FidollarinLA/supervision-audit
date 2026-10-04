@@ -4,7 +4,7 @@
 
 SupervisionAudit 是用 MoonBit 编写的训练数据审计工具。它读取已经分词的预处理结果，检查标签、Padding、监督范围和文档拼接边界，把问题定位到具体样本与 token。支持纯文本预训练、继续预训练，以及符合相同标签契约的对话微调数据。
 
-> 当前是可运行原型，尚未完成赛事验收、端到端训练验证或 Mooncakes 发布。演示语料均为合成文本；已补充固定版本 tokenizer / collator 的真实调用与导出验证。工具不执行模型训练，也不证明模型效果。
+> 当前是可运行原型，尚未完成赛事验收、端到端训练验证或 Mooncakes 发布。演示语料均为合成文本；已补充固定版本 tokenizer / collator 导出，以及微型随机模型的损失和梯度验证。工具不执行模型训练，也不证明模型效果。
 
 ## 它解决什么问题
 
@@ -110,7 +110,7 @@ node cli.mjs examples/transformers/batch.jsonl --jsonl --roles text --summary
 
 预期为“需复核”（退出码 `3`）：保留原始 collator 标签后，三个样本的首位置都会出现“不产生预测”的提示，Padding 标签正确。没有为了得到“通过”而改写标签。语料仍为本仓库合成文本，不代表生产数据验证。
 
-[重建步骤、来源与边界](docs/transformers-integration.md)包括固定版本依赖、离线生成、结果逐字节对照和故障注入测试。运行现有导出结果不需要安装 Python 或训练框架。
+[重建步骤、来源与边界](docs/transformers-integration.md)包括固定版本依赖、离线生成、结果逐字节对照和故障注入测试。运行现有导出结果不需要安装 Python 或训练框架。另有[模型损失对照实验](docs/model-loss-reference.md)：实际运行微型随机 GPT-2，核对首位置、Padding、助手回复和文档边界的损失与梯度；不下载预训练权重。
 
 ## MoonBit 核心与可复用接口
 

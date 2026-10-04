@@ -20,7 +20,7 @@ node cli.mjs examples/transformers/batch.jsonl --jsonl --roles text --summary
 | text-short | 4 | 8 | 4 |
 | text-single | 1 | 8 | 1 |
 
-总共 24 个位置、13 个声明监督标签。按本项目内部下一词位移契约，三个首位置不作为预测目标，因此有 10 个可用目标；单 token 样本没有这样的目标。这是按契约计算的数量，本轮没有运行模型或参考损失函数，不能称为实际损失验证。
+总共 24 个位置、13 个声明监督标签。按本项目内部下一词位移契约，三个首位置不作为预测目标，因此有 10 个可用目标；单 token 样本没有这样的目标。这一对应关系现已在[单独的微型模型实验](model-loss-reference.md)中通过实际损失和梯度验证。collator 导出本身仍不调用模型，不能单独替代损失验证。
 
 ## 从头重建
 
@@ -36,7 +36,7 @@ node cli.mjs artifacts/transformers/batch.jsonl --jsonl --roles text --summary
 
 Windows 下将解释器路径换成 `.venv-reference\Scripts\python.exe`，在 PowerShell 中设置 `$env:HF_HUB_OFFLINE="1"` 和 `$env:TRANSFORMERS_OFFLINE="1"`；Windows 本轮未实测。
 
-环境可能提示未找到 PyTorch/TensorFlow/Flax，这不妨碍本示例使用 NumPy collator；本轮确实没有安装训练框架。前三个核心依赖固定版本并由导出器核验，传递依赖尚未完整锁定。
+环境可能提示未找到 PyTorch/TensorFlow/Flax，这不妨碍本示例使用 NumPy collator；仅重建预处理夹具时不需要训练框架。单独的模型损失实验另需安装 PyTorch。前三个核心依赖固定版本并由导出器核验，传递依赖尚未完整锁定。
 
 导出器使用 `examples/transformers/corpus.jsonl`，根据文本建立确定性 WordLevel 词表，用 WhitespaceSplit 分词。不添加特殊 token，不截断、不拼接文档，右侧补齐到 8 的倍数。`mlm=False`；导出器不改写 collator 生成的 input_ids、labels 或 attention_mask。
 
