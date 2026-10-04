@@ -17,6 +17,7 @@ test('summary preserves machine JSON and all audit exit statuses', () => {
     assert.match(shown.stderr, new RegExp(`审计结果：${label}`));
     const report = JSON.parse(shown.stdout).report;
     assert.ok(shown.stderr.includes(`声明监督标签 ${report.supervised_tokens}`));
+    assert.ok(shown.stderr.includes(`位移后预测目标 ${report.prediction_targets}`));
   }
 });
 

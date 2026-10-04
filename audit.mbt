@@ -44,6 +44,7 @@ pub(all) struct SampleReport {
   id : String
   tokens : Int
   supervised_tokens : Int
+  prediction_targets : Int?
   supervised_ratio : Double
   roles : Array[String]
   states : Array[String]
@@ -58,6 +59,7 @@ pub(all) struct Report {
   sample_count : Int
   token_count : Int
   supervised_tokens : Int
+  prediction_targets : Int?
   error_count : Int
   warning_count : Int
   unknown_count : Int
@@ -77,8 +79,33 @@ fn finding(
 }
 
 ///|
+// Count non-ignored targets after the model-internal shift. Invalid shapes or
+// token/label/mask values leave the count unknown, rather than reporting zero.
+fn count_prediction_targets(s : Sample) -> Int? {
+  let n = s.input_ids.length()
+  if n == 0 || s.labels.length() != n || s.attention_mask.length() != n {
+    return None
+  }
+  let mut count = 0
+  for i = 0; i < n; i = i + 1 {
+    if s.input_ids[i] < 0 ||
+      (s.attention_mask[i] != 0 && s.attention_mask[i] != 1) ||
+      (s.labels[i] != -100 && s.labels[i] != s.input_ids[i]) {
+      return None
+    }
+    // Padding and policy violations can still create model loss targets.
+    // Count them, while the ordinary diagnostics explain why they are wrong.
+    if i > 0 && s.labels[i] != -100 {
+      count = count + 1
+    }
+  }
+  Some(count)
+}
+
+///|
 fn check_sample(s : Sample, allowed : Array[String]) -> SampleReport {
   let n = s.input_ids.length()
+  let prediction_targets = count_prediction_targets(s)
   let findings : Array[Finding] = []
   let roles = Array::make(n, "unknown")
   let source_ids = Array::make(n, "unknown")
@@ -317,6 +344,17 @@ fn check_sample(s : Sample, allowed : Array[String]) -> SampleReport {
       ),
     )
   }
+  if prediction_targets == Some(0) && supervised > 0 {
+    findings.push(
+      finding(
+        "NO_PREDICTION_TARGETS",
+        "warning",
+        s.id,
+        None,
+        "Only the first position has a label; model-internal causal shift leaves no prediction targets",
+      ),
+    )
+  }
   match s.original_supervised_tokens {
     Some(before) =>
       if before < 0 || before < supervised {
@@ -356,6 +394,7 @@ fn check_sample(s : Sample, allowed : Array[String]) -> SampleReport {
     id: s.id,
     tokens: n,
     supervised_tokens: supervised,
+    prediction_targets,
     supervised_ratio: if n == 0 {
       0.0
     } else {
@@ -375,6 +414,7 @@ pub fn audit(doc : Document) -> Report {
   let samples : Array[SampleReport] = []
   let mut token_count = 0
   let mut supervised_tokens = 0
+  let mut prediction_targets : Int? = Some(0)
   if doc.contract != "causal-lm-unshifted-v1" {
     findings.push(
       finding(
@@ -489,6 +529,11 @@ pub fn audit(doc : Document) -> Report {
       let report = check_sample(s, doc.allowed_roles)
       token_count = token_count + report.tokens
       supervised_tokens = supervised_tokens + report.supervised_tokens
+      prediction_targets = match
+        (prediction_targets, report.prediction_targets) {
+        (Some(before), Some(current)) => Some(before + current)
+        _ => None
+      }
       for f in report.findings {
         findings.push(f)
       }
@@ -517,6 +562,13 @@ pub fn audit(doc : Document) -> Report {
     sample_count: samples.length(),
     token_count,
     supervised_tokens,
+    prediction_targets: if doc.contract != "causal-lm-unshifted-v1" ||
+      doc.samples.is_empty() ||
+      samples.length() != doc.samples.length() {
+      None
+    } else {
+      prediction_targets
+    },
     error_count,
     warning_count,
     unknown_count,

@@ -60,6 +60,7 @@ function summary(result) {
   const lines = [
     `审计结果：${status(r.status)}`,
     `样本 ${r.sample_count}；token ${r.token_count}；声明监督标签 ${r.supervised_tokens}（不等同于实际损失项数量）。`,
+    `位移后预测目标 ${r.prediction_targets ?? "无法计算"}（数量不代表目标符合监督策略）。`,
     `错误 ${r.error_count}；提示 ${r.warning_count}；未知证据 ${r.unknown_count}。`,
   ];
   for (const f of r.findings.slice(0, 5)) {

@@ -34,3 +34,18 @@ JSON 中可选证据 token_index 缺失表示样本或文档级问题。ID 稳�
 `audit_jsonl(text, policy_text)` 返回 `{ok, document, report}`；document 是 MoonBit 实际审计的标准化输入，界面直接使用它定位原始 token。原有 report 字段继续保留。document 的缺失角色与来源标准化为空数组，缺失 ID 按原始行号生成。
 
 本契约采用“忽略后一个来源首个目标”的拼接策略。对其他允许跨文档目标的训练策略，这一诊断不适合作为通用质量结论。忽略边界目标也不会阻断后续 token 的跨文档注意力；本工具尚不分析注意力隔离矩阵。
+
+
+## 声明标签与位移后预测目标
+
+`supervised_tokens` 与 `supervised_ratio` 保留原来的声明标签语义。`Report` 和 `SampleReport` 新增 `prediction_targets : Int?`：在当前契约下，统计位置 `1..n-1` 中 label 不为 `-100` 的数量，排除首位置。此计数由 MoonBit 核心计算，CLI 与界面只显示结果。
+
+- 正常的右侧 Padding 被 `-100` 忽略，不计入目标；如果 Padding 标签被错误地保留，仍计入，同时报告 `PADDING_SUPERVISED`。角色与边界策略错误也不会让这个目标自动从模型损失中消失。因此“有 N 个目标”不等于“有 N 个合法目标”。
+- 角色或来源缺失不妨碍计算已知的标签位置数，但审计仍需复核。这不是对缺失证据的验证。
+- 空样本、长度不一致、无效 token ID / attention 值、label 不满足同位 token 或 `-100` 时，样本计数为 `None`。不支持契约、空数据集、任一样本计数未知或资源限制导致部分样本未检查时，总数也为 `None`。
+- MoonBit 默认 JSON 编码会**省略** `None` 字段，不能把缺失字段当成零；界面和 CLI 显示“无法计算”。旧版本报告也可能没有此字段。
+- 仅首位置有标签时，计数为 `0`，新增 `NO_PREDICTION_TARGETS` 提示；所有标签都忽略时沿用 `NO_SUPERVISION`，避免重复提示。这些样本仍为需复核。
+
+固定版本微型模型的损失与梯度对应验证见 [模型损失实验](model-loss-reference.md)。该计数按本契约计算，不能用于证明其他模型、注意力机制或损失归一化实现的行为。
+
+兼容性：JSON 新字段为增量信息，旧计数字段与比较中的 before/after_supervised 语义不变。MoonBit 公开报告结构增加成员，直接构造 `Report` / `SampleReport` 字面量的源码调用方需补充 `prediction_targets`；调用 `audit` 获取报告的用法不变。报告版本字段仍是独立待办。

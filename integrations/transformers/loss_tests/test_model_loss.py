@@ -114,7 +114,9 @@ class ModelLossTests(unittest.TestCase):
         self.assertEqual(report["status"], "review")
         self.assertEqual(report["supervised_tokens"], 13)
         self.assertEqual(report["error_count"], 0)
-        self.assertEqual([f["code"] for f in report["findings"]], ["FIRST_TOKEN_NOT_PREDICTED"] * 3)
+        self.assertEqual([f["code"] for f in report["findings"]], ["FIRST_TOKEN_NOT_PREDICTED"] * 3 + ["NO_PREDICTION_TARGETS"])
+        self.assertEqual(report["prediction_targets"], 10)
+        self.assertEqual([s["prediction_targets"] for s in report["samples"]], [7, 3, 0])
         output, labels = forward(tiny_model(document), document)
         self.assert_loss_and_gradients(output, labels, [list(range(7)), [0, 1, 2], []])
 
@@ -148,6 +150,7 @@ class ModelLossTests(unittest.TestCase):
         self.assertEqual(document["samples"][1]["attention_mask"][4], 0)
         report = audit(document)
         self.assertEqual(report["status"], "fail")
+        self.assertEqual(report["prediction_targets"], 11)
         self.assertTrue(any(f["code"] == "PADDING_SUPERVISED" and f["sample_id"] == "text-short"
                             and f["token_index"] == 4 for f in report["findings"]))
         output, labels = forward(tiny_model(document), document)
@@ -159,6 +162,8 @@ class ModelLossTests(unittest.TestCase):
         report = audit(document)
         self.assertEqual(report["status"], "review")
         self.assertEqual(report["supervised_tokens"], 1)
+        self.assertEqual(report["prediction_targets"], 0)
+        self.assertTrue(any(f["code"] == "NO_PREDICTION_TARGETS" for f in report["findings"]))
         output, labels = forward(tiny_model(document), document)
         reference, positions = independent_loss(output.logits.detach(), labels)
         self.assertEqual(positions, [[]])

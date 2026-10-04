@@ -18,11 +18,13 @@ test('real collator export retains padding and first-target semantics', () => {
   assert.equal(result.ok, true);
   assert.equal(result.report.status, 'review');
   assert.equal(result.report.supervised_tokens, 13);
+  assert.equal(result.report.prediction_targets, 10);
+  assert.deepEqual(result.report.samples.map(s => s.prediction_targets), [7, 3, 0]);
   assert.equal(result.report.token_count, 24);
   assert.equal(result.report.error_count, 0);
   assert.equal(result.report.unknown_count, 0);
   assert.deepEqual(result.report.findings.map(f => [f.code, f.sample_id, f.token_index]),
-    samples.map(row => ['FIRST_TOKEN_NOT_PREDICTED', row.id, 0]));
+    [...samples.map(row => ['FIRST_TOKEN_NOT_PREDICTED', row.id, 0]), ['NO_PREDICTION_TARGETS', 'text-single', undefined]]);
   assert.deepEqual(result.document.samples.map(row => row.labels), samples.map(row => row.labels));
   const manifest = JSON.parse(fixture('manifest.json'));
   assert.equal(manifest.corpus_sha256, createHash('sha256').update(fixture('corpus.jsonl')).digest('hex'));

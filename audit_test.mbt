@@ -157,3 +157,74 @@ test "JSON bridge rejects malformed input and wrong field types" {
     ),
   )
 }
+
+///|
+test "prediction targets exclude position zero without changing declared counts" {
+  let s = sample()
+  s.labels[0] = 10
+  let doc = { ..document(s), allowed_roles: ["user", "assistant"], }
+  let report = @supervision_audit.audit(doc)
+  assert_eq(report.supervised_tokens, 3)
+  assert_eq(report.prediction_targets, Some(2))
+  assert_eq(report.samples[0].prediction_targets, Some(2))
+  s.labels[2] = -100
+  s.labels[3] = -100
+  let zero = @supervision_audit.audit(doc)
+  assert_eq(zero.prediction_targets, Some(0))
+  assert_true(has(zero, "NO_PREDICTION_TARGETS"))
+  assert_eq(zero.status, "review")
+}
+
+///|
+test "ignored samples have zero targets but invalid arrays remain unknown" {
+  let ignored = { ..sample(), labels: [-100, -100, -100, -100], }
+  assert_eq(
+    @supervision_audit.audit(document(ignored)).prediction_targets,
+    Some(0),
+  )
+  for
+    invalid in [
+      { ..sample(), labels: [10], },
+      { ..sample(), labels: [-100, -100, 99, 21], },
+      { ..sample(), input_ids: [-1, 11, 20, 21], },
+      { ..sample(), attention_mask: [1, 1, 2, 1], },
+    ] {
+    let report = @supervision_audit.audit(document(invalid))
+    assert_eq(report.prediction_targets, None)
+    assert_eq(report.samples[0].prediction_targets, None)
+    assert_true(!has(report, "NO_PREDICTION_TARGETS"))
+  }
+}
+
+///|
+test "padding and absent provenance do not suppress model targets" {
+  let s = { ..sample(), spans: [], segments: [], }
+  s.attention_mask[2] = 0
+  let report = @supervision_audit.audit(document(s))
+  assert_eq(report.prediction_targets, Some(2))
+  assert_eq(report.status, "fail")
+  assert_true(has(report, "PADDING_SUPERVISED"))
+  assert_true(has(report, "ROLE_PROVENANCE_MISSING"))
+}
+
+///|
+test "aggregate target count refuses partial and unsupported audits" {
+  let good = sample()
+  let bad = { ..sample(), id: "b", labels: [10], }
+  let mixed = { ..document(good), samples: [good, bad], }
+  assert_eq(@supervision_audit.audit(mixed).prediction_targets, None)
+  let excessive = { ..sample(), id: "large", input_ids: Array::make(10001, 1), }
+  let partial = { ..document(good), samples: [good, excessive], }
+  let report = @supervision_audit.audit(partial)
+  assert_eq(report.samples.length(), 1)
+  assert_eq(report.samples[0].prediction_targets, Some(2))
+  assert_eq(report.prediction_targets, None)
+  assert_eq(
+    @supervision_audit.audit({ ..document(good), contract: "other", }).prediction_targets,
+    None,
+  )
+  assert_eq(
+    @supervision_audit.audit({ ..document(good), samples: [], }).prediction_targets,
+    None,
+  )
+}

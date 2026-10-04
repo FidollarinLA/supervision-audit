@@ -10,7 +10,7 @@
 node cli.mjs examples/transformers/batch.jsonl --jsonl --roles text --summary
 ```
 
-预期退出码为 **3（需复核）**，不是失败：三个样本各有一个 `FIRST_TOKEN_NOT_PREDICTED` 提示，没有错误或未知来源。collator 保留第一个位置的标签，模型内部位移约定下该位置不会产生预测目标。本示例不为得到绿色结果而修改原始输出。
+预期退出码为 **3（需复核）**，不是失败：三个样本各有一个 `FIRST_TOKEN_NOT_PREDICTED` 提示，单 token 样本另有一个 `NO_PREDICTION_TARGETS` 提示，共四条；没有错误或未知来源。collator 保留第一个位置的标签，模型内部位移约定下该位置不会产生预测目标。本示例不为得到绿色结果而修改原始输出。
 
 也可以在可视化工作台导入 `batch.jsonl`，将 JSONL 监督角色设为 `text`，查看具体 token。补齐位置的 label 均为 `-100`。
 
@@ -20,7 +20,7 @@ node cli.mjs examples/transformers/batch.jsonl --jsonl --roles text --summary
 | text-short | 4 | 8 | 4 |
 | text-single | 1 | 8 | 1 |
 
-总共 24 个位置、13 个声明监督标签。按本项目内部下一词位移契约，三个首位置不作为预测目标，因此有 10 个可用目标；单 token 样本没有这样的目标。这一对应关系现已在[单独的微型模型实验](model-loss-reference.md)中通过实际损失和梯度验证。collator 导出本身仍不调用模型，不能单独替代损失验证。
+总共 24 个位置、13 个声明监督标签；CLI 和界面另显示 10 个位移后预测目标，三个样本分别为 7、3、0。按本项目内部下一词位移契约，三个首位置不作为预测目标，因此有 10 个可用目标；单 token 样本没有这样的目标。这一对应关系现已在[单独的微型模型实验](model-loss-reference.md)中通过实际损失和梯度验证。collator 导出本身仍不调用模型，不能单独替代损失验证。
 
 ## 从头重建
 

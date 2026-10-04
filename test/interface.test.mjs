@@ -50,6 +50,15 @@ test('interface renders engine evidence, navigates tokens and clears stale resul
  large.contract='unsupported';get('input').value=JSON.stringify(large);get('run').onclick();
  assert.equal(get('tokens').children.length,0);assert.equal(get('token-page').textContent,'');
  assert.equal(get('ratio').textContent,'—');assert.equal(get('next-tokens').disabled,true);
+ assert.match(get('target-note').textContent,/无法计算/);
+ assert.match(get('metrics').children[2].children[2].textContent,/无法计算/);
+ const actualBatch=await readFile(new URL('../examples/transformers/batch.jsonl',import.meta.url),'utf8');
+ get('format').value='jsonl';get('policy').value='text';get('input').value=actualBatch;get('run').onclick();
+ assert.equal(get('metrics').children[2].children[1].textContent,'13');
+ assert.match(get('metrics').children[2].children[2].textContent,/位移后预测目标：10/);
+ get('sample').value='2';get('sample').onchange();
+ assert.match(get('target-note').textContent,/位移后预测目标：0/);
+ get('input').oninput();assert.match(get('target-note').textContent,/无法计算/);
  get('input').value='{';get('run').onclick();
  assert.match(get('notice').textContent,/无法审计/);assert.equal(get('tokens').children.length,0);assert.equal(get('findings').children.length,0);
  get('export').onclick();assert.match(get('notice').textContent,/请先成功运行审计/);

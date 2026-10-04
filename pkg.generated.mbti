@@ -62,6 +62,7 @@ pub(all) struct Report {
   sample_count : Int
   token_count : Int
   supervised_tokens : Int
+  prediction_targets : Int?
   error_count : Int
   warning_count : Int
   unknown_count : Int
@@ -95,6 +96,7 @@ pub(all) struct SampleReport {
   id : String
   tokens : Int
   supervised_tokens : Int
+  prediction_targets : Int?
   supervised_ratio : Double
   roles : Array[String]
   states : Array[String]

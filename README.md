@@ -94,7 +94,7 @@ node cli.mjs examples/pretraining.json --baseline examples/pretraining-boundary.
 | `2` | 文件、JSON 或命令输入错误 |
 | `3` | 需要人工复核，包括证据不足与提示项 |
 
-`--summary` 将中文摘要写入标准错误流，标准输出仍只包含完整 JSON；配合 `--out report.json` 可保存报告并在终端查看摘要。摘要列出审计状态、声明监督标签数和前五项问题，完整报告不截断。声明标签数不等于模型实际损失项数量。比较摘要明确显示前后审计状态，即使新数据失败，比较成功执行仍返回 `0`。
+`--summary` 将中文摘要写入标准错误流，标准输出仍只包含完整 JSON；配合 `--out report.json` 可保存报告并在终端查看摘要。摘要列出审计状态、声明监督标签数和前五项问题，完整报告不截断。摘要另列“位移后预测目标”：排除首位置后未忽略的标签数；无法完整计算时显示“无法计算”。错误 Padding 标签也会计入目标，所以数量不能替代审计结论。比较摘要明确显示前后审计状态，即使新数据失败，比较成功执行仍返回 `0`。
 
 参数拼写错误、重复选项、缺少参数值会返回 `2`。`--roles` 仅用于 JSONL；比较模式只接受 JSON 文档，不能与 `--jsonl` 混用，避免配置被静默忽略。
 
@@ -108,7 +108,7 @@ node cli.mjs examples/pretraining.json --baseline examples/pretraining-boundary.
 node cli.mjs examples/transformers/batch.jsonl --jsonl --roles text --summary
 ```
 
-预期为“需复核”（退出码 `3`）：保留原始 collator 标签后，三个样本的首位置都会出现“不产生预测”的提示，Padding 标签正确。没有为了得到“通过”而改写标签。语料仍为本仓库合成文本，不代表生产数据验证。
+预期为“需复核”（退出码 `3`）：保留原始 collator 标签后，三个样本的首位置都会出现“不产生预测”的提示，单 token 样本另有“位移后没有预测目标”提示；Padding 标签正确。没有为了得到“通过”而改写标签。语料仍为本仓库合成文本，不代表生产数据验证。
 
 [重建步骤、来源与边界](docs/transformers-integration.md)包括固定版本依赖、离线生成、结果逐字节对照和故障注入测试。运行现有导出结果不需要安装 Python 或训练框架。另有[模型损失对照实验](docs/model-loss-reference.md)：实际运行微型随机 GPT-2，核对首位置、Padding、助手回复和文档边界的损失与梯度；不下载预训练权重。
 
@@ -134,7 +134,7 @@ MoonBit 模块名为 `FidollarinLA/supervision_audit`，公开类型与接口见
 - 只支持 `causal-lm-unshifted-v1`：模型内部做下一 token 位移，labels 与 input_ids 同位置对齐。提前位移的标签、MLM 和多模态标签尚不支持。
 - attention_mask 是逐 token 的 0/1 数组，不支持 block-diagonal attention 或其他注意力隔离机制。
 - 不推测 tokenizer 的语义，也不从缺失字段猜测角色或来源。
-- 显示的监督数量包含位置 0 的非忽略标签；位置 0 不产生内部位移后的预测，会收到提示。
+- 声明监督数量包含首位置标签；新增的位移后预测目标数排除首位置。样本或整体无法完整计算时显示“无法计算”；仅首标签样本会提示没有预测目标。数量可能包含错误目标，不等同于合法监督数量。
 - “数量稳定”仅表示样本 token 数和监督数量不变，不保证内容一致。
 - 文件导入最多 1 MiB；核心字符串入口最多 1,048,576 UTF-16 单位、200 条样本，单样本 10,000 个 token，整份文档最多 100,000 个 token。区间展开也有单样本预算。超限会报告错误，不会声称完整通过。
 

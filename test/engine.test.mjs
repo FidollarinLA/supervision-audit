@@ -25,5 +25,22 @@ test('independent per-token oracle agrees on 128 seeded policy combinations',()=
   const actual=r.findings.filter(f=>f.severity==='error').map(f=>f.code+'@'+f.token_index);
   assert.deepEqual(actual.sort(),expected.sort());
   assert.equal(r.supervised_tokens,labels.filter(x=>x!==-100).length);
+  assert.equal(r.prediction_targets,labels.slice(1).filter(x=>x!==-100).length);
  }
+});
+
+test('invalid and partial audits omit unknown prediction counts instead of reporting zero',()=>{
+ const invalid=load('healthy');invalid.samples[0].labels.pop();
+ let report=run(invalid).report;
+ assert.equal(report.status,'fail');
+ assert.equal(Object.hasOwn(report,'prediction_targets'),false);
+ assert.equal(Object.hasOwn(report.samples[0],'prediction_targets'),false);
+ const partial=load('healthy');
+ partial.samples.push({...structuredClone(partial.samples[0]),id:'oversized',input_ids:Array(10001).fill(1)});
+ report=run(partial).report;
+ assert.equal(report.samples.length,1);
+ assert.equal(report.samples[0].prediction_targets,3);
+ assert.equal(Object.hasOwn(report,'prediction_targets'),false);
+ partial.contract='unsupported';
+ assert.equal(Object.hasOwn(run(partial).report,'prediction_targets'),false);
 });

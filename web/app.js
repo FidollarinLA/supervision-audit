@@ -8,6 +8,7 @@ const labels = {
   ROLE_POLICY_VIOLATION: ['监督范围错误', '这个位置的角色被当前策略排除，却仍带有训练标签。'],
   PADDING_SUPERVISED: ['Padding 参与训练', 'attention_mask 为 0 的位置仍带有训练标签。'],
   LABEL_TOKEN_MISMATCH: ['标签与 token 不一致', '当前契约要求 label 等于同位置 token ID，或为 -100。'],
+  NO_PREDICTION_TARGETS: ['位移后没有预测目标', '只有首位置带标签，内部位移后没有可计算的预测目标；请核对样本长度或监督策略。'],
   NO_SUPERVISION: ['整条样本没有监督信号', '所有标签均为 -100，请确认是否为有意设置。'],
   SUPERVISION_REDUCED: ['监督信号减少', '声明数量少于提供的基线，需核对截断或预处理。'],
   SOURCE_OVERLAP: ['来源区间重叠', '同一个 token 被多个来源区间覆盖。'],
@@ -36,6 +37,7 @@ function invalidate(message = '输入已修改，请重新运行审计。') {
   for (const id of ['metrics', 'tokens', 'findings', 'role-track', 'sample', 'sample-overview']) $(id).replaceChildren();
   $('detail').textContent = '请成功运行审计后查看证据。';
   $('ratio').textContent = '—'; $('progress').style.width = '0%';
+  $('target-note').textContent = '位移后预测目标：无法计算。';
   $('export').disabled = true;
   $('previous-tokens').disabled = true; $('next-tokens').disabled = true;
   $('token-page').textContent = '';
@@ -63,7 +65,7 @@ function render() {
   const cards = [
     ['审计结果', statusName[report.status], '只针对声明的数据契约'],
     ['检查 token', report.token_count, report.sample_count + ' 条样本'],
-    ['监督标签', report.supervised_tokens, 'label 不为 -100 的位置'],
+    ['声明监督标签', report.supervised_tokens, `位移后预测目标：${report.prediction_targets ?? '无法计算'}`],
     ['发现的问题', report.error_count + report.warning_count + report.unknown_count, `${report.error_count} 错误 · ${report.warning_count} 提示 · ${report.unknown_count} 待核实`]
   ];
   $('metrics').replaceChildren(...cards.map(([title, value, sub], i) => {
@@ -76,11 +78,11 @@ function render() {
   }));
   const table = element('table', 'evidence-table');
   const heading = element('tr');
-  for (const name of ['样本', 'Token', '监督标签', '问题', '证据']) heading.append(element('th', '', name));
+  for (const name of ['样本', 'Token', '声明标签', '位移后目标', '问题', '证据']) heading.append(element('th', '', name));
   table.append(heading);
   for (const [index, sample] of report.samples.entries()) {
     const row = element('tr');
-    for (const value of [sample.id, sample.tokens, sample.supervised_tokens, sample.findings.length]) row.append(element('td', '', value));
+    for (const value of [sample.id, sample.tokens, sample.supervised_tokens, sample.prediction_targets ?? '无法计算', sample.findings.length]) row.append(element('td', '', value));
     const cell = element('td'), button = element('button', 'text-button', '查看 →');
     button.onclick = () => selectSample(index);
     cell.append(button); row.append(cell); table.append(row);
@@ -103,6 +105,7 @@ function renderSample() {
   if (!sample) {
     $('detail').textContent = '没有可查看的样本；请查看数据集级别的问题。';
     $('ratio').textContent = '—'; $('progress').style.width = '0%';
+    $('target-note').textContent = '位移后预测目标：无法计算。';
     $('token-page').textContent = '';
     $('previous-tokens').disabled = true; $('next-tokens').disabled = true;
     return;
@@ -127,6 +130,7 @@ function renderSample() {
   $('previous-tokens').disabled = tokenStart === 0;
   $('next-tokens').disabled = end >= sample.tokens;
   $('token-page').textContent = sample.tokens ? `#${tokenStart}–${end - 1} / ${sample.tokens} 个 token` : '空样本';
+  $('target-note').textContent = `位移后预测目标：${sample.prediction_targets ?? '无法计算'}。排除首位置标签；含错误目标，需结合审计结果判断。`;
   $('ratio').textContent = (sample.supervised_ratio * 100).toFixed(1) + '%';
   $('progress').style.width = (sample.supervised_ratio * 100) + '%';
   $('detail').textContent = '点击一个 token，查看标签、角色与来源证据。';
