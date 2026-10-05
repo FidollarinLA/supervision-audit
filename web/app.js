@@ -1,4 +1,5 @@
-import { audit_json, audit_jsonl, compare_json } from './engine.js';
+import { createEngineClient } from './engine-client.js';
+const auditClient = createEngineClient(), comparisonClient = createEngineClient();
 const $ = id => document.getElementById(id);
 const statusName = { pass: '通过', review: '需复核', fail: '发现错误' };
 const severityName = { error: '错误', warning: '提示', unknown: '缺少证据' };
@@ -28,6 +29,7 @@ function element(tag, cls, text) {
   return node;
 }
 function clearComparison() {
+  comparisonClient.cancel();
   $('comparison-panel').hidden = true;
   $('comparison').replaceChildren();
 }
@@ -40,6 +42,8 @@ function clearBaseline() {
 }
 function invalidate(message = '输入已修改，请重新运行审计。') {
   revision++;
+  auditClient.cancel();
+  $('run').disabled = false; $('cancel').hidden = true;
   result = null; input = null;
   for (const id of ['metrics', 'tokens', 'findings', 'role-track', 'sample', 'sample-overview']) $(id).replaceChildren();
   $('detail').textContent = '请成功运行审计后查看证据。';
@@ -50,23 +54,25 @@ function invalidate(message = '输入已修改，请重新运行审计。') {
   $('token-page').textContent = '';
   clearComparison(); $('notice').textContent = message;
 }
-function run() {
+async function run() {
+  invalidate('正在后台审计…可随时取消或修改输入。');
+  const ticket = revision;
+  $('run').disabled = true; $('cancel').hidden = false;
   try {
-    const text = $('input').value;
-    if ($('format').value === 'jsonl') {
-      const policy = $('policy').value === 'all' ? ['system', 'user', 'assistant', 'tool'] : [$('policy').value || 'assistant'];
-      result = JSON.parse(audit_jsonl(text, JSON.stringify(policy)));
-      input = result.document;
-    } else {
-      result = JSON.parse(audit_json(text));
-      input = JSON.parse(text);
-    }
-    if (!result.ok) throw new Error(result.error);
+    const policy = $('policy').value === 'all' ? ['system', 'user', 'assistant', 'tool'] : [$('policy').value || 'assistant'];
+    const response = await auditClient.run({ kind: 'audit', text: $('input').value, format: $('format').value, policy });
+    if (ticket !== revision) return;
+    if (!response.ok) throw new Error(response.error);
+    result = response; input = response.document;
     $('notice').textContent = ''; currentSample = 0; tokenStart = 0;
+    $('run').disabled = false; $('cancel').hidden = true;
     $('export').disabled = false;
-    render(); renderComparison();
-  } catch (error) { invalidate('无法审计：' + error.message); }
+    render(); await renderComparison();
+  } catch (error) {
+    if (ticket === revision && error.name !== 'AbortError') invalidate('无法审计：' + error.message);
+  }
 }
+
 function render() {
   const report = result.report;
   const cards = [
@@ -173,11 +179,24 @@ function renderFindings() {
   for (const finding of findings.slice(0, 200)) $('findings').append(findingNode(finding));
   if (findings.length > 200) $('findings').append(element('p', 'limit-note', `显示前 200 项，共 ${findings.length} 项。导出报告包含完整结果。`));
 }
-function renderComparison() {
+async function renderComparison() {
   clearComparison();
   if (!baselineText || !result) return;
-  const response = JSON.parse(compare_json(baselineText, JSON.stringify(input)));
-  if (!response.ok) { $('notice').textContent = '基线无法比较：' + response.error; return; }
+  const ticket = revision, baselineTicket = baselineRevision;
+  $('comparison-panel').hidden = false;
+  $('comparison').replaceChildren(element('p', 'limit-note', '正在后台比较…可清除基线取消。'));
+  let response;
+  try {
+    response = await comparisonClient.run({ kind: 'compare', before: baselineText, after: JSON.stringify(input) });
+  } catch (error) {
+    if (ticket === revision && baselineTicket === baselineRevision && error.name !== 'AbortError') {
+      clearComparison();
+      $('notice').textContent = '基线无法比较：' + error.message;
+    }
+    return;
+  }
+  if (ticket !== revision || baselineTicket !== baselineRevision) return;
+  if (!response.ok) { clearComparison(); $('notice').textContent = '基线无法比较：' + response.error; return; }
   const comparison = response.comparison;
   $('comparison-panel').hidden = false;
   const summary = element('div', 'comparison-summary');
@@ -205,17 +224,19 @@ function renderComparison() {
   $('comparison').replaceChildren(summary, scroll, evidence);
 }
 async function loadPreset() {
-  const ticket = ++revision;
+  invalidate('正在读取演示…');
+  const ticket = revision;
   try {
     const response = await fetch('./examples/' + $('preset').value + '.json');
     if (!response.ok) throw new Error('示例加载失败');
     const data = await response.json();
     if (ticket !== revision) return;
     clearBaseline(); $('format').value = 'json';
-    $('input').value = JSON.stringify(data, null, 2); run();
+    $('input').value = JSON.stringify(data, null, 2); await run();
   } catch (error) { if (ticket === revision) invalidate(error.message); }
 }
 $('run').onclick = run;
+$('cancel').onclick = () => invalidate('已取消审计，输入已保留。可重新运行。');
 $('preset').onchange = loadPreset;
 $('input').oninput = () => invalidate();
 $('format').onchange = () => invalidate();
@@ -232,7 +253,7 @@ $('file').onchange = async () => {
   try {
     const text = await file.text(); if (ticket !== revision) return;
     $('format').value = file.name.toLowerCase().endsWith('.jsonl') ? 'jsonl' : 'json';
-    $('input').value = text; run();
+    $('input').value = text; await run();
   } catch (error) { if (ticket === revision) invalidate('文件读取失败：' + error.message); }
 };
 $('baseline').onchange = async () => {
@@ -246,7 +267,7 @@ $('baseline').onchange = async () => {
     const text = await file.text(); if (!isCurrent()) return;
     baselineText = text; baselineName = file.name;
     $('notice').textContent = '';
-    if (result) renderComparison(); else $('notice').textContent = '已读取基线，请先运行当前数据。';
+    if (result) await renderComparison(); else $('notice').textContent = '已读取基线，请先运行当前数据。';
   } catch (error) { if (isCurrent()) $('notice').textContent = '基线读取失败：' + error.message; }
 };
 $('compare-demo').onclick = async () => {
@@ -259,7 +280,7 @@ $('compare-demo').onclick = async () => {
     if (ticket !== revision) return;
     baselineText = JSON.stringify(before); baselineName = '预训练修复前';
     $('format').value = 'json'; $('preset').value = 'pretraining';
-    $('input').value = JSON.stringify(after, null, 2); run();
+    $('input').value = JSON.stringify(after, null, 2); await run();
   } catch (error) { if (ticket === revision) invalidate(error.message); }
 };
 $('export').onclick = () => {
@@ -267,4 +288,5 @@ $('export').onclick = () => {
   const url = URL.createObjectURL(new Blob([JSON.stringify({ ok: true, report: result.report }, null, 2)], { type: 'application/json' }));
   const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'supervision-audit-report.json'; anchor.click(); URL.revokeObjectURL(url);
 };
+globalThis.addEventListener?.('pagehide', () => invalidate('页面已离开，计算已取消。请重新运行审计。'));
 await loadPreset();

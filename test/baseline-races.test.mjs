@@ -1,3 +1,4 @@
+import { BrowserWorker } from './helpers/browser-worker.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -15,6 +16,8 @@ function deferred() {
 }
 
 test('baseline reads respect replacement, clearing and input changes', async t => {
+  const oldWorker=globalThis.Worker; globalThis.Worker=BrowserWorker;
+  t.after(()=>{globalThis.Worker=oldWorker;});
   const nodes=new Map();
   const get=id=>{ if (!nodes.has(id)) nodes.set(id,new Node()); return nodes.get(id); };
   get('preset').value='pretraining'; get('filter').value='all';
@@ -47,7 +50,7 @@ test('baseline reads respect replacement, clearing and input changes', async t =
     get('clear-baseline').onclick();
     pending.resolve(bad); await reading;
     assert.equal(get('comparison-panel').hidden,true);
-    get('run').onclick();
+    await get('run').onclick();
     assert.equal(get('comparison-panel').hidden,true);
   });
 
@@ -68,7 +71,7 @@ test('baseline reads respect replacement, clearing and input changes', async t =
     pending.resolve(bad); await earlier;
     assert.equal(get('comparison-panel').hidden,true);
     assert.match(get('notice').textContent,/基线文件超过/);
-    get('run').onclick();
+    await get('run').onclick();
     assert.equal(get('comparison-panel').hidden,true);
   });
 
@@ -86,7 +89,7 @@ test('baseline reads respect replacement, clearing and input changes', async t =
     }
   });
   await t.test('current failures remain visible and a later successful read clears them',async()=>{
-    get('run').onclick();
+    await get('run').onclick();
     await select('broken.json',async()=>{throw new Error('current read failure');});
     assert.match(get('notice').textContent,/基线读取失败：current read failure/);
     assert.equal(get('comparison-panel').hidden,true);
@@ -95,7 +98,7 @@ test('baseline reads respect replacement, clearing and input changes', async t =
     assert.equal(get('notice').textContent,'');
     get('baseline').files=[]; await get('baseline').onchange();
     assert.equal(get('comparison-panel').hidden,true);
-    get('run').onclick(); assert.equal(get('comparison-panel').hidden,true);
+    await get('run').onclick(); assert.equal(get('comparison-panel').hidden,true);
   });
 
 });

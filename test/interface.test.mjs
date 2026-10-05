@@ -1,3 +1,4 @@
+import { BrowserWorker } from './helpers/browser-worker.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -10,6 +11,12 @@ class Node {
  click(){this.clicked=true;}
 }
 test('interface renders engine evidence, navigates tokens and clears stale results',async t=>{
+ const oldWorker=globalThis.Worker; globalThis.Worker=BrowserWorker;
+ t.after(()=>{globalThis.Worker=oldWorker;});
+ const oldAddEventListener=globalThis.addEventListener;
+ let onPageHide;
+ globalThis.addEventListener=(name,callback)=>{if(name==='pagehide')onPageHide=callback;};
+ t.after(()=>{globalThis.addEventListener=oldAddEventListener;});
  const nodes=new Map();const get=id=>{if(!nodes.has(id))nodes.set(id,new Node());return nodes.get(id);};
  get('preset').value='role-leak';get('filter').value='all';
  const oldDocument=globalThis.document,oldFetch=globalThis.fetch;
@@ -31,6 +38,33 @@ test('interface renders engine evidence, navigates tokens and clears stale resul
  assert.equal(get('comparison-panel').hidden,false);
  assert.match(get('comparison').children[0].children[1].textContent,/0 项新增问题 · 2 项已消失问题/);
  assert.equal(get('metrics').children[0].children[1].textContent,'通过');
+ get('baseline').files=[{name:'baseline.json',size:100,text:async()=>get('input').value}];
+ const pendingComparison=get('baseline').onchange();
+ await Promise.resolve();
+ assert.equal(get('comparison-panel').hidden,false);
+ assert.match(get('comparison').children[0].textContent,/正在后台比较/);
+ get('clear-baseline').onclick(); await pendingComparison;
+ assert.equal(get('comparison-panel').hidden,true);
+ assert.equal(get('metrics').children[0].children[1].textContent,'通过');
+ const cancelledRun=get('run').onclick();
+ assert.equal(get('cancel').hidden,false);
+ assert.equal(get('run').disabled,true);
+ get('cancel').onclick();
+ await cancelledRun;
+ assert.match(get('notice').textContent,/已取消审计/);
+ assert.equal(get('metrics').children.length,0);
+ assert.equal(get('run').disabled,false);
+ assert.equal(get('cancel').hidden,true);
+ await get('run').onclick();
+ assert.equal(get('metrics').children[0].children[1].textContent,'通过');
+ const leavingRun=get('run').onclick();
+ onPageHide(); await leavingRun;
+ assert.equal(get('run').disabled,false);
+ assert.equal(get('cancel').hidden,true);
+ assert.equal(get('export').disabled,true);
+ assert.match(get('notice').textContent,/请重新运行审计/);
+ await get('run').onclick();
+ assert.equal(get('metrics').children[0].children[1].textContent,'通过');
  get('input').oninput();
  assert.equal(get('comparison-panel').hidden,true);
  assert.equal(get('export').disabled,true);
@@ -42,22 +76,22 @@ test('interface renders engine evidence, navigates tokens and clears stale resul
  assert.match(get('detail').textContent,/Token 11 · Label 11/);
  get('clear-baseline').onclick();
  const large={contract:'causal-lm-unshifted-v1',allowed_roles:['text'],samples:[{id:'large',input_ids:Array(300).fill(1),labels:[-100,...Array(299).fill(1)],attention_mask:Array(300).fill(1),spans:[{start:0,end:300,role:'text'}],segments:[{start:0,end:300,source_id:'A'}]}]};
- get('format').value='json';get('input').value=JSON.stringify(large);get('run').onclick();
+ get('format').value='json';get('input').value=JSON.stringify(large);await get('run').onclick();
  assert.equal(get('tokens').children.length,120);
  get('next-tokens').onclick();assert.match(get('token-page').textContent,/#120–239/);
  get('tokens').children[0].onclick();assert.match(get('detail').textContent,/位置 #120/);
  get('next-tokens').onclick();assert.equal(get('tokens').children.length,60);assert.equal(get('next-tokens').disabled,true);
  get('previous-tokens').onclick();assert.equal(get('tokens').children.length,120);
  large.samples.push(structuredClone(large.samples[0]));
- get('input').value=JSON.stringify(large);get('run').onclick();get('tokens').children[0].onclick();
+ get('input').value=JSON.stringify(large);await get('run').onclick();get('tokens').children[0].onclick();
  assert.match(get('detail').textContent,/样本 ID 重复/);
- large.contract='unsupported';get('input').value=JSON.stringify(large);get('run').onclick();
+ large.contract='unsupported';get('input').value=JSON.stringify(large);await get('run').onclick();
  assert.equal(get('tokens').children.length,0);assert.equal(get('token-page').textContent,'');
  assert.equal(get('ratio').textContent,'—');assert.equal(get('next-tokens').disabled,true);
  assert.match(get('target-note').textContent,/无法计算/);
  assert.match(get('metrics').children[2].children[2].textContent,/无法计算/);
  const actualBatch=await readFile(new URL('../examples/transformers/batch.jsonl',import.meta.url),'utf8');
- get('format').value='jsonl';get('policy').value='text';get('input').value=actualBatch;get('run').onclick();
+ get('format').value='jsonl';get('policy').value='text';get('input').value=actualBatch;await get('run').onclick();
  assert.equal(get('metrics').children[2].children[1].textContent,'13');
  assert.match(get('metrics').children[2].children[2].textContent,/位移后预测目标：10/);
  get('export').onclick();
@@ -68,7 +102,7 @@ test('interface renders engine evidence, navigates tokens and clears stale resul
  get('sample').value='2';get('sample').onchange();
  assert.match(get('target-note').textContent,/位移后预测目标：0/);
  get('input').oninput();assert.match(get('target-note').textContent,/无法计算/);
- get('input').value='{';get('run').onclick();
+ get('input').value='{';await get('run').onclick();
  assert.match(get('notice').textContent,/无法审计/);assert.equal(get('tokens').children.length,0);assert.equal(get('findings').children.length,0);
  get('export').onclick();assert.match(get('notice').textContent,/请先成功运行审计/);
 });
