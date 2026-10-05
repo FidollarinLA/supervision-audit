@@ -133,6 +133,8 @@ node cli.mjs examples/transformers/batch.jsonl --jsonl --roles text --summary
 
 MoonBit 模块名为 `FidollarinLA/supervision_audit`，公开类型与接口见 [pkg.generated.mbti](pkg.generated.mbti)。尚未发布至 Mooncakes，当前请从源码构建；不提供尚不能使用的包安装命令。
 
+已有独立消费者验证：在 Git 检出目录执行 `npm run check:package`，会生成实际发布归档，解压到临时目录，再由另一个 MoonBit 模块调用公开接口，分别测试 JS、Wasm GC 和 native。需要 `git`、`unzip` 和 native 编译环境；这不执行发布，也不验证注册表安装。接入示例与复现范围见[本地包复现](docs/package-rehearsal.md)。
+
 ## 能力边界
 
 - 只支持 `causal-lm-unshifted-v1`：模型内部做下一 token 位移，labels 与 input_ids 同位置对齐。提前位移的标签、MLM 和多模态标签尚不支持。
@@ -153,12 +155,13 @@ moon info
 moon fmt
 npm run build
 npm test
+npm run check:package
 npm run benchmark
 ```
 
 测试覆盖预训练拼接、Padding、角色策略、JSONL 证据不足、资源边界、CLI 退出码、修复对比和界面状态。独立 JavaScript 判定器核对 128 组固定种子策略组合；大问题集合测试检查 2,999 项诊断的完整消除。基准测试是本机合成数据测量，不能代表真实训练速度。
 
-[审核自查](docs/review-2026-10-03.md) · [迭代路线](docs/ROADMAP.md) · [演示步骤](docs/demo.md) · [开发记录](docs/WORKLOG.md)
+[审核自查](https://github.com/FidollarinLA/supervision-audit/blob/main/docs/review-2026-10-03.md) · [迭代路线](docs/ROADMAP.md) · [演示步骤](docs/demo.md) · [开发记录](https://github.com/FidollarinLA/supervision-audit/blob/main/docs/WORKLOG.md)
 
 ## 原创贡献与许可证
 

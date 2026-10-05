@@ -40,6 +40,9 @@ jobs:
           node cli.mjs examples/healthy.json
           node cli.mjs examples/preprocessed.jsonl --jsonl
 
+      - name: Rehearse package with an independent local consumer
+        run: npm run check:package
+
       - uses: actions/setup-python@v5
         if: matrix.os == 'ubuntu-latest'
         with:

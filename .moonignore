@@ -1,0 +1,16 @@
+# .moonignore replaces .gitignore for packaging; keep generated/private paths out.
+_build/
+.moon/
+node_modules/
+web/engine.js
+artifacts/
+.DS_Store
+.venv-reference/
+__pycache__/
+
+# Development instructions and application drafts are not library deliverables.
+AGENTS.md
+PROJECT_PROPOSAL_DRAFT.md
+docs/WORKLOG.md
+docs/proposal-editing-notes.md
+docs/review-*.md

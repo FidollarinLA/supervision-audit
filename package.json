@@ -7,6 +7,7 @@
     "dev": "node scripts/server.mjs",
     "test": "node --test test/*.test.mjs",
     "audit": "node cli.mjs",
-    "benchmark": "node scripts/benchmark.mjs"
+    "benchmark": "node scripts/benchmark.mjs",
+    "check:package": "node scripts/check-package.mjs"
   }
 }
