@@ -4,7 +4,7 @@
 
 我们把仓库公开合成样本交给模型，运行前向与反向，并在 Python 中用独立的 log-sum-exp 计算交叉熵。判定器不调用 Transformers 或 PyTorch 的损失/位移辅助函数。实际模型损失与独立结果的绝对差须小于等于 `1e-6`；每个 logit 位置是否具有非零梯度，也必须与预期目标位置一致。MoonBit 审计结果由已编译的核心通过 Node 读取，没有在 Python 中另写审计规则。
 
-## 已验证的六种情况
+## 已验证的情况
 
 | 实验 | 实际观察及审计对应 |
 | --- | --- |
@@ -14,8 +14,9 @@
 | 两份预训练文档拼接 | 标签位置 3 的边界目标被忽略，其前一个 logit 位置 2 没有直接损失梯度；其余有效目标保持参与 |
 | 人为损坏 Padding 标签 | 即使对应 attention_mask 为 0，未忽略的标签仍产生额外损失项；MoonBit 报告 `PADDING_SUPERVISED` |
 | 单 token 样本独立成批 | 首位置有一个声明标签，但没有位移后的目标；所测实现的平均损失为 NaN，MoonBit 返回需复核而不是通过 |
+| tokenizer 左右截断到 4 | 分别核对两种实际导出批次：9 个声明标签对应 6 个损失目标，梯度位置为前两个样本的 0、1、2，单 token 样本为空；审计同时提示长文本监督减少 |
 
-表中的梯度是**最终输出 logits 相对于损失的梯度**。某个 logit 没有直接损失，不表示对应输入 token、隐藏状态或共享参数都没有梯度，更不能证明跨文档注意力被阻断。对于最后一行，空目标批次的处理由具体训练器决定，这里只记录固定版本模型默认平均损失的实际行为。
+表中的梯度是**最终输出 logits 相对于损失的梯度**。某个 logit 没有直接损失，不表示对应输入 token、隐藏状态或共享参数都没有梯度，更不能证明跨文档注意力被阻断。单 token 空目标批次的处理由具体训练器决定，这里只记录固定版本模型默认平均损失的实际行为。
 
 ## 本地复现
 
@@ -43,6 +44,6 @@ Linux CPU 环境先安装预处理依赖，再从官方 CPU 索引安装 PyTorch
 
 这组实验支持 `causal-lm-unshifted-v1` 的内部位移约定，并说明审计诊断与所测模型计算的关系。它没有证明所有模型架构、生产数据集、训练器归一化策略、混合精度或分布式训练都具有相同行为，也没有执行收敛或训练效果评估。assistant-only 与 packing 使用已有合成标签，并未接入真实聊天模板生成器。
 
-CLI 与界面现已同时展示声明标签数和位移后预测目标数；单 token 样本明确提示零目标，无法完整计算时显示“无法计算”。原有声明字段语义保持不变，详见[数据契约](contract.md)。注意力隔离、生产 tokenizer 和截断策略继续作为独立任务。
+CLI 与界面现已同时展示声明标签数和位移后预测目标数；单 token 样本明确提示零目标，无法完整计算时显示“无法计算”。原有声明字段语义保持不变，详见[数据契约](contract.md)。目前截断实验仅覆盖合成纯文本与本地 WordLevel；注意力隔离、生产 tokenizer、特殊 token 和聊天模板的截断策略继续作为独立任务。
 
 参考：[Transformers 4.57.1 损失实现](https://github.com/huggingface/transformers/blob/v4.57.1/src/transformers/loss/loss_utils.py)、[GPT-2 实现](https://github.com/huggingface/transformers/blob/v4.57.1/src/transformers/models/gpt2/modeling_gpt2.py)、[PyTorch 官方历史版本安装说明](https://pytorch.org/get-started/previous-versions/)。这些依赖通过公开接口调用，不复制其源代码。

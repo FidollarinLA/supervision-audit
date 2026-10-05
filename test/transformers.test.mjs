@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { audit_jsonl } from '../web/engine.js';
+import { audit_jsonl, compare_json } from '../web/engine.js';
 const fixture = name => readFileSync(new URL('../examples/transformers/' + name, import.meta.url), 'utf8');
 const rows = () => fixture('batch.jsonl').trim().split('\n').map(JSON.parse);
 const audit = values => JSON.parse(audit_jsonl(values.map(row => JSON.stringify(row)).join('\n'), '["text"]'));
@@ -57,4 +57,41 @@ test('stripping exporter provenance leaves unknown evidence, not an inferred pas
   assert.equal(result.status, 'review');
   assert.equal(result.unknown_count, 6);
   assert.equal(result.error_count, 0);
+});
+
+for (const side of ['left', 'right']) {
+  test(`real ${side} truncation preserves rebased evidence and reports supervision reduction`, () => {
+    const samples = fixture(`truncate-${side}/batch.jsonl`).trim().split('\n').map(JSON.parse);
+    const result = audit(samples);
+    assert.equal(result.report.status, 'review');
+    assert.equal(result.report.error_count, 0);
+    assert.equal(result.report.unknown_count, 0);
+    assert.equal(result.report.supervised_tokens, 9);
+    assert.equal(result.report.prediction_targets, 6);
+    assert.deepEqual(result.report.samples.map(s => s.prediction_targets), [3, 3, 0]);
+    assert.deepEqual(result.report.findings.filter(f => f.code === 'SUPERVISION_REDUCED').map(f => [f.sample_id, f.message]),
+      [['text-long', 'Supervised count decreased from 8 to 4; inspect truncation or preprocessing']]);
+    assert.equal(result.report.warning_count, 5);
+    assert.deepEqual(result.document.samples.map(s => s.labels), samples.map(s => s.labels));
+    const manifest = JSON.parse(fixture(`truncate-${side}/manifest.json`));
+    const [start, end] = manifest.truncation.source_ranges[0].retained_token_range;
+    assert.deepEqual(samples[0].input_ids.slice(0, 4), rows()[0].input_ids.slice(start, end));
+    assert.equal(manifest.corpus_sha256, createHash('sha256').update(fixture('corpus.jsonl')).digest('hex'));
+  });
+}
+
+test('truncation reduction requires the declared original count', () => {
+  const samples = fixture('truncate-right/batch.jsonl').trim().split('\n').map(JSON.parse);
+  for (const sample of samples) delete sample.original_supervised_tokens;
+  assert.equal(audit(samples).report.findings.some(f => f.code === 'SUPERVISION_REDUCED'), false);
+  samples[0].original_supervised_tokens = 3;
+  assert.equal(audit(samples).report.findings.some(f => f.code === 'INVALID_BASELINE'), true);
+});
+
+test('equal-size left and right truncation is count-stable, not content-identical', () => {
+  const documents = ['left', 'right'].map(side => audit(fixture(`truncate-${side}/batch.jsonl`).trim().split('\n').map(JSON.parse)).document);
+  assert.notDeepEqual(documents[0].samples[0].input_ids, documents[1].samples[0].input_ids);
+  const response = JSON.parse(compare_json(...documents.map(document => JSON.stringify(document))));
+  assert.equal(response.ok, true);
+  assert.deepEqual(response.comparison.samples.map(s => s.change), ['stable', 'stable', 'stable']);
 });

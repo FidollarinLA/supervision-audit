@@ -120,6 +120,21 @@ class ModelLossTests(unittest.TestCase):
         output, labels = forward(tiny_model(document), document)
         self.assert_loss_and_gradients(output, labels, [list(range(7)), [0, 1, 2], []])
 
+    def test_truncated_collator_targets_match_model_loss_on_both_sides(self):
+        for side in ("left", "right"):
+            with self.subTest(side=side):
+                path = ROOT / "examples/transformers" / ("truncate-" + side) / "batch.jsonl"
+                document = {"contract": "causal-lm-unshifted-v1", "allowed_roles": ["text"],
+                            "samples": [json.loads(line) for line in path.read_text().splitlines()]}
+                report = audit(document)
+                self.assertEqual(report["supervised_tokens"], 9)
+                self.assertEqual(report["prediction_targets"], 6)
+                self.assertEqual(report["error_count"], 0)
+                self.assertEqual([f["sample_id"] for f in report["findings"]
+                                  if f["code"] == "SUPERVISION_REDUCED"], ["text-long"])
+                output, labels = forward(tiny_model(document), document)
+                self.assert_loss_and_gradients(output, labels, [[0, 1, 2], [0, 1, 2], []])
+
     def test_first_label_changes_declared_counts_but_not_model_loss(self):
         document = collator_document()
         model = tiny_model(document)

@@ -116,6 +116,8 @@ node cli.mjs examples/transformers/batch.jsonl --jsonl --roles text --summary
 
 [重建步骤、来源与边界](docs/transformers-integration.md)包括固定版本依赖、离线生成、结果逐字节对照和故障注入测试。运行现有导出结果不需要安装 Python 或训练框架。另有[模型损失对照实验](docs/model-loss-reference.md)：实际运行微型随机 GPT-2，核对首位置、Padding、助手回复和文档边界的损失与梯度；不下载预训练权重。
 
+还可导入 `examples/transformers/truncate-left/batch.jsonl` 或 `truncate-right/batch.jsonl`，查看实际左右截断后的监督减少：声明标签由 13 降至 9，预测目标由 10 降至 6。清单保留原始 token 范围，模型实验核对截断后的损失位置；这仍是 WordLevel 合成语料实验。
+
 ## MoonBit 核心与可复用接口
 
 ![实现结构](docs/assets/architecture.svg)
