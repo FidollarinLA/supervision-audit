@@ -108,7 +108,8 @@ pub fn compare(before : Report, after : Report) -> Comparison {
 ///|
 #export_name("compare_json")
 pub fn compare_json(before_text : String, after_text : String) -> String {
-  if before_text.length() > 1048576 || after_text.length() > 1048576 {
+  if before_text.length() > input_limit_utf16() ||
+    after_text.length() > input_limit_utf16() {
     return error_json("Comparison input limit exceeded")
   }
   try {

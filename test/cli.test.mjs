@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { input_limit_utf16 } from '../web/engine.js';
 const cwd = new URL('../', import.meta.url);
 const run = args => spawnSync(process.execPath, ['cli.mjs', ...args], { cwd, encoding: 'utf8' });
 
@@ -89,4 +90,52 @@ test('summary bounds findings and escapes user-controlled terminal evidence', ()
     assert.ok(result.stderr.includes('injected\\n\\u001b'));
     assert.equal(JSON.parse(result.stdout).report.findings.length, 8);
   } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('CLI accepts exact core limits and returns core errors for oversized files and baselines', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'audit-cli-'));
+  try {
+    const file = join(dir, 'input.data');
+    const limit = input_limit_utf16();
+    for (const [fixture, args] of [['healthy.json', []], ['preprocessed.jsonl', ['--jsonl']]]) {
+      const original = readFileSync(new URL('../examples/' + fixture, import.meta.url), 'utf8');
+      writeFileSync(file, original.padEnd(limit, ' '));
+      const exact = run([file, ...args]);
+      assert.equal(exact.status, 0, exact.stderr);
+      assert.equal(JSON.parse(exact.stdout).report.status, 'pass');
+      writeFileSync(file, original.padEnd(limit + 65536, ' '));
+      const oversized = run([file, ...args, '--summary']);
+      assert.equal(oversized.status, 2);
+      const result = JSON.parse(oversized.stdout);
+      assert.equal(result.ok, false);
+      assert.equal(result.report, undefined);
+      assert.match(result.error, /exceeds 1048576 UTF-16/);
+      assert.match(oversized.stderr, /输入错误/);
+    }
+    for (const args of [[file, '--baseline', 'examples/healthy.json'], ['examples/healthy.json', '--baseline', file]]) {
+      const result = run(args);
+      assert.equal(result.status, 2);
+      assert.deepEqual(JSON.parse(result.stdout), {ok:false, error:'Comparison input limit exceeded'});
+    }
+    const output = join(dir, 'error.json');
+    const saved = run([file, '--out', output]);
+    assert.equal(saved.status, 2);
+    assert.equal(saved.stdout, '');
+    assert.equal(JSON.parse(readFileSync(output, 'utf8')).ok, false);
+  } finally { rmSync(dir, {recursive:true, force:true}); }
+});
+
+test('input stream failures keep the existing output file untouched', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'audit-cli-'));
+  try {
+    const output = join(dir, 'existing.json'), absent = join(dir, 'absent.json');
+    writeFileSync(output, 'keep existing report');
+    for (const args of [[absent], ['examples/healthy.json', '--baseline', absent]]) {
+      const result = run([...args, '--out', output]);
+      assert.equal(result.status, 2);
+      assert.equal(result.stdout, '');
+      assert.match(result.stderr, /ENOENT/);
+      assert.equal(readFileSync(output, 'utf8'), 'keep existing report');
+    }
+  } finally { rmSync(dir, {recursive:true, force:true}); }
 });

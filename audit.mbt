@@ -580,10 +580,17 @@ pub fn audit(doc : Document) -> Report {
 }
 
 ///|
+/// Shared bridge input budget in UTF-16 code units, not file bytes.
+#export_name("input_limit_utf16")
+pub fn input_limit_utf16() -> Int {
+  1048576
+}
+
+///|
 #export_name("audit_json")
 pub fn audit_json(text : String) -> String {
-  if text.length() > 1048576 {
-    return error_json("Input exceeds 1048576 UTF-16 code units")
+  if text.length() > input_limit_utf16() {
+    return error_json("Input exceeds \{input_limit_utf16()} UTF-16 code units")
   }
   try {
     let doc = decode_document(text)

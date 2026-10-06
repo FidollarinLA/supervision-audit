@@ -17,8 +17,10 @@ pub extend PreprocessedRow with @json.FromJson::{from_json}
 /// is optional and stays unknown when absent. The declared label contract is fixed.
 #export_name("audit_jsonl")
 pub fn audit_jsonl(text : String, policy_text : String) -> String {
-  if text.length() > 1048576 {
-    return error_json("JSONL input exceeds 1048576 UTF-16 code units")
+  if text.length() > input_limit_utf16() {
+    return error_json(
+      "JSONL input exceeds \{input_limit_utf16()} UTF-16 code units",
+    )
   }
   try {
     let allowed : Array[String] = @json.from_json(@json.parse(policy_text))

@@ -1,5 +1,6 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import { audit_json, audit_jsonl, compare_json } from './web/engine.js';
+import { readAuditInput } from './scripts/read-audit-input.mjs';
 
 const usage = `Usage: node cli.mjs FILE.json [--out REPORT.json] [--summary]
        node cli.mjs FILE.jsonl --jsonl [--roles assistant,tool] [--out REPORT.json] [--summary]
@@ -80,9 +81,9 @@ if (process.argv.slice(2).includes('--help')) {
 } else {
   try {
     const options = parseArgs(process.argv.slice(2));
-    const text = await readFile(options.file, 'utf8');
+    const text = await readAuditInput(options.file);
     const result = JSON.parse(options['--baseline']
-      ? compare_json(await readFile(options['--baseline'], 'utf8'), text)
+      ? compare_json(await readAuditInput(options['--baseline']), text)
       : options['--jsonl']
         ? audit_jsonl(text, JSON.stringify(options.roles ?? ['assistant']))
         : audit_json(text));

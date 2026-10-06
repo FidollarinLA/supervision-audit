@@ -16,6 +16,8 @@ pub fn compare(Report, Report) -> Comparison
 
 pub fn compare_json(String, String) -> String
 
+pub fn input_limit_utf16() -> Int
+
 // Errors
 
 // Types and methods
