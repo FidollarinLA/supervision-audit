@@ -89,6 +89,10 @@ node cli.mjs examples/pretraining-boundary.json
 # 已分词的 JSONL，明确指定纯文本策略
 node cli.mjs dataset.jsonl --jsonl --roles text --out report.json
 
+# 预处理输出直接进入审计，也可用输入重定向
+cat examples/preprocessed.jsonl | node cli.mjs - --jsonl --summary
+node cli.mjs - --jsonl --roles text < examples/transformers/batch.jsonl
+
 # 对比同一契约、同一策略的两个版本
 node cli.mjs examples/pretraining.json --baseline examples/pretraining-boundary.json --out comparison.json
 ```
@@ -103,6 +107,8 @@ node cli.mjs examples/pretraining.json --baseline examples/pretraining-boundary.
 `--summary` 将中文摘要写入标准错误流，标准输出仍只包含完整 JSON；配合 `--out report.json` 可保存报告并在终端查看摘要。摘要列出审计状态、声明监督标签数和前五项问题，完整报告不截断。摘要另列“位移后预测目标”：排除首位置后未忽略的标签数；无法完整计算时显示“无法计算”。错误 Padding 标签也会计入目标，所以数量不能替代审计结论。比较摘要明确显示前后审计状态，即使新数据失败，比较成功执行仍返回 `0`。
 
 参数拼写错误、重复选项、缺少参数值会返回 `2`。`--roles` 仅用于 JSONL；比较模式只接受 JSON 文档，不能与 `--jsonl` 混用，避免配置被静默忽略。
+
+`-` 表示从管道或输入重定向读取标准输入，也可写在 `--baseline -` 中作为比较基线。比较两侧不能同时为 `-`，该错误在读取和写报告前返回 `2`。标准输入使用与文件相同的有界分块读取和核心预算；损坏尾部或超限不会把前缀视为通过。超限会关闭输入流，上游程序可能收到断管，应同时检查审计退出码。这仍不是逐行增量审计。`--out -` 不表示标准输出，输出到终端请省略 `--out`。
 
 接入 CI 时可以直接使用审计退出码阻止有错误的数据继续进入训练。比较模式的 `0` **不代表新数据更好**。导出中的 `report.schema_version` 为 `supervision-audit/report/v1`，比较结果则使用 `comparison.schema_version`，详见[报告版本与旧数据处理](docs/report-format.md)。格式版本与训练输入契约是两回事。JSON 报告中 `status` 为 `pass`、`review` 或 `fail`；`findings` 包含问题代码、严重程度、样本 ID、token 索引和说明。
 
