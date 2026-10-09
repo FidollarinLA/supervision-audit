@@ -110,6 +110,9 @@ fn check_sample(s : Sample, allowed : Array[String]) -> SampleReport {
   let findings : Array[Finding] = []
   let roles = Array::make(n, "unknown")
   let source_ids = Array::make(n, "unknown")
+  // Coverage must not depend on user-supplied strings such as "unknown".
+  let role_covered = Array::make(n, false)
+  let source_covered = Array::make(n, false)
   let states = Array::make(n, "unknown")
   if s.labels.length() != n || s.attention_mask.length() != n {
     findings.push(
@@ -156,7 +159,7 @@ fn check_sample(s : Sample, allowed : Array[String]) -> SampleReport {
       )
     }
     for i = span.start; i < span.end; i = i + 1 {
-      if roles[i] != "unknown" {
+      if role_covered[i] {
         findings.push(
           finding(
             "ROLE_OVERLAP",
@@ -169,24 +172,11 @@ fn check_sample(s : Sample, allowed : Array[String]) -> SampleReport {
         roles[i] = "conflict"
       } else {
         roles[i] = span.role
+        role_covered[i] = true
       }
     }
   }
   for segment in s.segments {
-    if segment.start > 0 &&
-      segment.start < n &&
-      segment.start < s.labels.length() &&
-      s.labels[segment.start] != -100 {
-      findings.push(
-        finding(
-          "PACKING_CROSS_SOURCE_TARGET",
-          "error",
-          s.id,
-          Some(segment.start),
-          "Packed source begins with a supervised target; plain causal attention would predict it from the previous source",
-        ),
-      )
-    }
     if segment.start < 0 ||
       segment.end <= segment.start ||
       segment.end > n ||
@@ -202,8 +192,21 @@ fn check_sample(s : Sample, allowed : Array[String]) -> SampleReport {
       )
       continue
     }
+    if segment.start > 0 &&
+      segment.start < s.labels.length() &&
+      s.labels[segment.start] != -100 {
+      findings.push(
+        finding(
+          "PACKING_CROSS_SOURCE_TARGET",
+          "error",
+          s.id,
+          Some(segment.start),
+          "Packed source begins with a supervised target; plain causal attention would predict it from the previous source",
+        ),
+      )
+    }
     for i = segment.start; i < segment.end; i = i + 1 {
-      if source_ids[i] != "unknown" {
+      if source_covered[i] {
         findings.push(
           finding(
             "SOURCE_OVERLAP",
@@ -216,6 +219,7 @@ fn check_sample(s : Sample, allowed : Array[String]) -> SampleReport {
         source_ids[i] = "conflict"
       } else {
         source_ids[i] = segment.source_id
+        source_covered[i] = true
       }
     }
   }
@@ -223,10 +227,10 @@ fn check_sample(s : Sample, allowed : Array[String]) -> SampleReport {
   let mut missing_role = false
   let mut missing_source = false
   for i = 0; i < n; i = i + 1 {
-    if roles[i] == "unknown" {
+    if !role_covered[i] {
       missing_role = true
     }
-    if source_ids[i] == "unknown" {
+    if !source_covered[i] {
       missing_source = true
     }
     if s.input_ids[i] < 0 {

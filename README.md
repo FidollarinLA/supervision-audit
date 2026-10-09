@@ -4,7 +4,7 @@
 
 SupervisionAudit 是用 MoonBit 编写的训练数据审计工具。它读取已经分词的预处理结果，检查标签、Padding、监督范围和文档拼接边界，把问题定位到具体样本与 token。支持纯文本预训练、继续预训练，以及符合相同标签契约的对话微调数据。
 
-> 当前是可运行原型，尚未完成赛事验收、端到端训练验证或 Mooncakes 发布。演示语料均为合成文本；已补充固定版本 tokenizer / collator 导出，以及微型随机模型的损失和梯度验证。工具不执行模型训练，也不证明模型效果。
+> 当前是可运行原型，尚未完成赛事验收或生产数据端到端训练验证。演示语料均为合成文本；已补充固定版本 tokenizer / collator 导出，以及微型随机模型的损失和梯度验证。工具不执行模型训练，也不证明模型效果。
 
 ## 它解决什么问题
 
@@ -37,7 +37,7 @@ npm run dev
 4. 导入自己的 JSON 或 JSONL，确认监督策略，再运行审计。
 5. 导出完整 JSON 报告。大样本按每页 120 个 token 查看，问题列表最多显示前 200 项；报告保留完整结果。
 
-比较基线以最后选择的文件为准；旧文件即使稍后才读完，也不会覆盖新基线。清除基线后，旧读取结果不会重新出现。
+比较基线以最后选择的文件为准；旧文件即使稍后才读完，也不会覆盖新基线。比较或读取失败时仍可点击“清除基线”，保留当前审计结果并取消旧读取。导入或编辑数据后，场景下拉框显示“自定义输入”，避免把用户数据误认为演示。两个导入按钮支持 Tab 聚焦和 Enter 打开文件选择器。
 
 审计与修复比较在浏览器后台 Worker 中计算。运行时可点击“取消审计”，保留输入后重新运行；修改输入或切换场景也会终止旧计算。需要支持模块 Worker 的浏览器，不支持时可使用 CLI。文件大小与样本预算保持不变，尚不支持流式大文件处理，详见[后台审计与取消](docs/background-audit.md)。
 
@@ -133,7 +133,7 @@ node cli.mjs examples/transformers/batch.jsonl --jsonl --roles text --summary
 | `web/` | 本地可视化工作台 |
 | `cli.mjs` | 离线命令行入口 |
 
-MoonBit 模块名为 `FidollarinLA/supervision_audit`，公开类型与接口见 [pkg.generated.mbti](pkg.generated.mbti)。尚未发布至 Mooncakes，当前请从源码构建；不提供尚不能使用的包安装命令。
+MoonBit 模块名为 `FidollarinLA/supervision_audit`，公开类型与接口见 [pkg.generated.mbti](pkg.generated.mbti)。注册表版本可用性可用 `moon view FidollarinLA/supervision_audit` 核对；完整 Web 与 CLI 请从本仓库构建。
 
 已有独立消费者验证：在 Git 检出目录执行 `npm run check:package`，会生成实际发布归档，解压到临时目录，再由另一个 MoonBit 模块调用公开接口，分别测试 JS、Wasm GC 和 native。需要 `git`、`unzip` 和 native 编译环境；这不执行发布，也不验证注册表安装。接入示例与复现范围见[本地包复现](docs/package-rehearsal.md)。
 
@@ -164,7 +164,7 @@ npm run benchmark
 
 测试覆盖预训练拼接、Padding、角色策略、JSONL 证据不足、资源边界、CLI 退出码、修复对比和界面状态。独立 JavaScript 判定器核对 128 组固定种子策略组合；大问题集合测试检查 2,999 项诊断的完整消除。基准测试是本机合成数据测量，不能代表真实训练速度。
 
-[审核自查](https://github.com/FidollarinLA/supervision-audit/blob/main/docs/review-2026-10-03.md) · [迭代路线](docs/ROADMAP.md) · [演示步骤](docs/demo.md) · [开发记录](https://github.com/FidollarinLA/supervision-audit/blob/main/docs/WORKLOG.md)
+[审核自查](https://github.com/FidollarinLA/supervision-audit/blob/main/docs/review-2026-10-09.md) · [迭代路线](docs/ROADMAP.md) · [演示步骤](docs/demo.md) · [开发记录](https://github.com/FidollarinLA/supervision-audit/blob/main/docs/WORKLOG.md)
 
 ## 原创贡献与许可证
 

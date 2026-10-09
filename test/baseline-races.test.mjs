@@ -93,12 +93,29 @@ test('baseline reads respect replacement, clearing and input changes', async t =
     await select('broken.json',async()=>{throw new Error('current read failure');});
     assert.match(get('notice').textContent,/基线读取失败：current read failure/);
     assert.equal(get('comparison-panel').hidden,true);
+    assert.equal(get('clear-baseline').hidden,false);
+    get('clear-baseline').onclick();
+    assert.equal(get('clear-baseline').hidden,true);
+    assert.equal(get('notice').textContent,'');
     await select('recovered.json',async()=>good);
     assert.match(heading(),/^recovered.json/);
     assert.equal(get('notice').textContent,'');
     get('baseline').files=[]; await get('baseline').onchange();
     assert.equal(get('comparison-panel').hidden,true);
     await get('run').onclick(); assert.equal(get('comparison-panel').hidden,true);
+  });
+
+  await t.test('incompatible baseline can be cleared without replacing a valid current audit',async()=>{
+    const incompatible=JSON.parse(good); incompatible.allowed_roles=['assistant'];
+    await select('different-policy.json',async()=>JSON.stringify(incompatible));
+    assert.match(get('notice').textContent,/基线无法比较/);
+    assert.equal(get('comparison-panel').hidden,true);
+    assert.equal(get('clear-baseline').hidden,false);
+    get('clear-baseline').onclick();
+    assert.equal(get('notice').textContent,'');
+    assert.equal(get('clear-baseline').hidden,true);
+    assert.equal(get('metrics').children[0].children[1].textContent,'通过');
+    await get('run').onclick();assert.equal(get('comparison-panel').hidden,true);
   });
 
 });

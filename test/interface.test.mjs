@@ -28,6 +28,8 @@ test('interface renders engine evidence, navigates tokens and clears stale resul
  globalThis.document={getElementById:get,createElement:tag=>new Node(tag)};
  globalThis.fetch=async path=>({ok:true,json:async()=>JSON.parse(await readFile(new URL('../web/'+path,import.meta.url),'utf8'))});
  await import('../web/app.js');
+ get('import-data').onclick();assert.equal(get('file').clicked,true);
+ get('import-baseline').onclick();assert.equal(get('baseline').clicked,true);
  assert.equal(get('metrics').children[0].children[1].textContent,'发现错误');
  assert.equal(get('tokens').children.length,7);
  assert.ok(get('findings').children.length>0);
@@ -66,10 +68,12 @@ test('interface renders engine evidence, navigates tokens and clears stale resul
  await get('run').onclick();
  assert.equal(get('metrics').children[0].children[1].textContent,'通过');
  get('input').oninput();
+ assert.equal(get('preset').value,'custom');
  assert.equal(get('comparison-panel').hidden,true);
  assert.equal(get('export').disabled,true);
  get('file').files=[{name:'pretrain.jsonl',size:150,text:async()=>'{"input_ids":[10,11],"labels":[-100,11],"attention_mask":[1,1]}'}];
  get('policy').value='text';await get('file').onchange();
+ assert.equal(get('preset').value,'custom');
  assert.equal(get('format').value,'jsonl');
  assert.equal(get('metrics').children[0].children[1].textContent,'需复核');
  get('tokens').children[1].onclick();

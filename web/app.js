@@ -38,6 +38,8 @@ function clearBaseline() {
   // of edits to the current audit input.
   baselineRevision++;
   baselineText = null; baselineName = ''; $('baseline').value = '';
+  $('clear-baseline').hidden = true;
+  if ($('notice').textContent.startsWith('基线') || $('notice').textContent.startsWith('已读取基线')) $('notice').textContent = '';
   clearComparison();
 }
 function invalidate(message = '输入已修改，请重新运行审计。') {
@@ -238,7 +240,7 @@ async function loadPreset() {
 $('run').onclick = run;
 $('cancel').onclick = () => invalidate('已取消审计，输入已保留。可重新运行。');
 $('preset').onchange = loadPreset;
-$('input').oninput = () => invalidate();
+$('input').oninput = () => { $('preset').value = 'custom'; invalidate(); };
 $('format').onchange = () => invalidate();
 $('policy').onchange = () => { if ($('format').value === 'jsonl') invalidate(); };
 $('sample').onchange = () => selectSample(Number($('sample').value));
@@ -246,12 +248,15 @@ $('filter').onchange = renderFindings;
 $('previous-tokens').onclick = () => { if (!result || !tokenStart) return; tokenStart -= PAGE_SIZE; renderSample(); };
 $('next-tokens').onclick = () => { if (!result || tokenStart + PAGE_SIZE >= result.report.samples[currentSample]?.tokens) return; tokenStart += PAGE_SIZE; renderSample(); };
 $('clear-baseline').onclick = clearBaseline;
+$('import-data').onclick = () => { $('file').value = ''; $('file').click(); };
+$('import-baseline').onclick = () => { $('baseline').value = ''; $('baseline').click(); };
 $('file').onchange = async () => {
   const file = $('file').files[0]; if (!file) return;
   invalidate('正在读取本地数据…'); const ticket = revision;
   if (file.size > 1048576) { $('notice').textContent = '文件超过 1 MiB，请分批导出。'; return; }
   try {
     const text = await file.text(); if (ticket !== revision) return;
+    $('preset').value = 'custom';
     $('format').value = file.name.toLowerCase().endsWith('.jsonl') ? 'jsonl' : 'json';
     $('input').value = text; await run();
   } catch (error) { if (ticket === revision) invalidate('文件读取失败：' + error.message); }
@@ -260,6 +265,7 @@ $('baseline').onchange = async () => {
   const file = $('baseline').files[0];
   if (!file) { clearBaseline(); return; }
   baselineText = null; baselineName = ''; clearComparison();
+  $('clear-baseline').hidden = false;
   const ticket = revision, baselineTicket = ++baselineRevision;
   const isCurrent = () => ticket === revision && baselineTicket === baselineRevision;
   if (file.size > 1048576) { $('notice').textContent = '基线文件超过 1 MiB。'; return; }
@@ -279,6 +285,7 @@ $('compare-demo').onclick = async () => {
     const [before, after] = await Promise.all(responses.map(response => response.json()));
     if (ticket !== revision) return;
     baselineText = JSON.stringify(before); baselineName = '预训练修复前';
+    $('clear-baseline').hidden = false;
     $('format').value = 'json'; $('preset').value = 'pretraining';
     $('input').value = JSON.stringify(after, null, 2); await run();
   } catch (error) { if (ticket === revision) invalidate(error.message); }

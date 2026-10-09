@@ -88,6 +88,47 @@ test "overlapping role and source intervals are errors" {
 }
 
 ///|
+test "source IDs are data rather than coverage sentinels" {
+  for id in ["unknown", "conflict"] {
+    let s = { ..sample(), segments: [{ start: 0, end: 4, source_id: id, }], }
+    let report = @supervision_audit.audit(document(s))
+    assert_eq(report.status, "pass")
+    assert_eq(report.samples[0].source_ids[0], id)
+    s.segments.push({ start: 0, end: 1, source_id: "other", })
+    let overlap = @supervision_audit.audit(document(s))
+    assert_true(has(overlap, "SOURCE_OVERLAP"))
+    assert_true(!has(overlap, "SOURCE_PROVENANCE_MISSING"))
+  }
+}
+
+///|
+test "unsupported role cannot hide overlapping coverage" {
+  let s = {
+    ..sample(),
+    spans: [
+      { start: 0, end: 4, role: "unknown", },
+      { start: 0, end: 4, role: "assistant", },
+    ],
+  }
+  let report = @supervision_audit.audit(document(s))
+  assert_true(has(report, "UNKNOWN_ROLE"))
+  assert_true(has(report, "ROLE_OVERLAP"))
+  assert_eq(report.samples[0].roles[0], "conflict")
+}
+
+///|
+test "invalid source intervals do not assert a packing boundary" {
+  let s = {
+    ..sample(),
+    segments: [{ start: 2, end: 9, source_id: "outside", }],
+  }
+  let report = @supervision_audit.audit(document(s))
+  assert_true(has(report, "SEGMENT_INVALID"))
+  assert_true(has(report, "SOURCE_PROVENANCE_MISSING"))
+  assert_true(!has(report, "PACKING_CROSS_SOURCE_TARGET"))
+}
+
+///|
 test "packing masks the first target of each following source" {
   let s = {
     ..sample(),
