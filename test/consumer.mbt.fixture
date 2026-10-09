@@ -44,3 +44,14 @@ test "external consumer can use JSON and JSONL bridges" {
   let compared = @json.parse(@audit.compare_json(text, text))
   assert_true(compared is { "ok": true, "comparison": { "new_findings": [], .. }, .. })
 }
+
+///|
+test "published source identifiers cannot bypass provenance checks" {
+  let doc = document()
+  doc.samples[0].segments[0] = { start: 0, end: 3, source_id: "unknown" }
+  assert_eq(@audit.audit(doc).status, "pass")
+  doc.samples[0].segments.push({ start: 0, end: 1, source_id: "other" })
+  let report = @audit.audit(doc)
+  assert_eq(report.status, "fail")
+  assert_true(report.findings.any(f => f.code == "SOURCE_OVERLAP"))
+}

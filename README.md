@@ -133,9 +133,11 @@ node cli.mjs examples/transformers/batch.jsonl --jsonl --roles text --summary
 | `web/` | 本地可视化工作台 |
 | `cli.mjs` | 离线命令行入口 |
 
-MoonBit 模块名为 `FidollarinLA/supervision_audit`，公开类型与接口见 [pkg.generated.mbti](pkg.generated.mbti)。注册表版本可用性可用 `moon view FidollarinLA/supervision_audit` 核对；完整 Web 与 CLI 请从本仓库构建。
+MoonBit 模块 `FidollarinLA/supervision_audit@0.1.0` 已发布至 [Mooncakes](https://mooncakes.io/docs/FidollarinLA/supervision_audit)，并从独立临时模块完成 JS、Wasm GC、native 安装测试。公开类型与接口见 [pkg.generated.mbti](pkg.generated.mbti)，安装配置见[MoonBit 接入说明](docs/package-rehearsal.md)。完整 Web 与 CLI 请从本仓库构建。
 
 已有独立消费者验证：在 Git 检出目录执行 `npm run check:package`，会生成实际发布归档，解压到临时目录，再由另一个 MoonBit 模块调用公开接口，分别测试 JS、Wasm GC 和 native。需要 `git`、`unzip` 和 native 编译环境；这不执行发布，也不验证注册表安装。接入示例与复现范围见[本地包复现](docs/package-rehearsal.md)。
+
+`npm run check:registry` 则刷新注册表索引，从已发布的 `0.1.0` 安装到独立临时模块，在三个后端调用公开接口；不使用本地工作区或路径覆盖，需要网络，不执行发布。若新版本尚未被索引收录，会明确失败。
 
 ## 能力边界
 
