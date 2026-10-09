@@ -21,7 +21,7 @@ const labels = {
 };
 const PAGE_SIZE = 120;
 let result = null, input = null, currentSample = 0, tokenStart = 0;
-let baselineText = null, baselineName = '', revision = 0, baselineRevision = 0;
+let baselineText = null, baselineName = '', revision = 0, baselineRevision = 0, baselineReadPending = false;
 function element(tag, cls, text) {
   const node = document.createElement(tag);
   if (cls) node.className = cls;
@@ -37,13 +37,19 @@ function clearBaseline() {
   // Clearing/replacing a baseline invalidates its pending read independently
   // of edits to the current audit input.
   baselineRevision++;
+  baselineReadPending = false;
   baselineText = null; baselineName = ''; $('baseline').value = '';
   $('clear-baseline').hidden = true;
+  $('baseline-origin').textContent = '比较基线：未选择';
   if ($('notice').textContent.startsWith('基线') || $('notice').textContent.startsWith('已读取基线')) $('notice').textContent = '';
   clearComparison();
 }
 function invalidate(message = '输入已修改，请重新运行审计。') {
   revision++;
+  if (baselineReadPending) {
+    baselineReadPending = false;
+    $('baseline-origin').textContent = '比较基线：未载入（当前数据已变更，请重新选择）';
+  }
   auditClient.cancel();
   $('run').disabled = false; $('cancel').hidden = true;
   result = null; input = null;
@@ -234,13 +240,16 @@ async function loadPreset() {
     const data = await response.json();
     if (ticket !== revision) return;
     clearBaseline(); $('format').value = 'json';
+    $('data-origin').textContent = '当前数据：演示 · ' + ($('preset').selectedOptions?.[0]?.textContent ?? $('preset').value);
     $('input').value = JSON.stringify(data, null, 2); await run();
   } catch (error) { if (ticket === revision) invalidate(error.message); }
 }
 $('run').onclick = run;
 $('cancel').onclick = () => invalidate('已取消审计，输入已保留。可重新运行。');
 $('preset').onchange = loadPreset;
-$('input').oninput = () => { $('preset').value = 'custom'; invalidate(); };
+$('input').oninput = () => {
+  $('preset').value = 'custom'; $('data-origin').textContent = '当前数据：手动编辑的输入'; invalidate();
+};
 $('format').onchange = () => invalidate();
 $('policy').onchange = () => { if ($('format').value === 'jsonl') invalidate(); };
 $('sample').onchange = () => selectSample(Number($('sample').value));
@@ -257,6 +266,7 @@ $('file').onchange = async () => {
   try {
     const text = await file.text(); if (ticket !== revision) return;
     $('preset').value = 'custom';
+    $('data-origin').textContent = '当前数据：本地文件 · ' + file.name;
     $('format').value = file.name.toLowerCase().endsWith('.jsonl') ? 'jsonl' : 'json';
     $('input').value = text; await run();
   } catch (error) { if (ticket === revision) invalidate('文件读取失败：' + error.message); }
@@ -266,15 +276,29 @@ $('baseline').onchange = async () => {
   if (!file) { clearBaseline(); return; }
   baselineText = null; baselineName = ''; clearComparison();
   $('clear-baseline').hidden = false;
+  $('baseline-origin').textContent = '比较基线：正在读取 · ' + file.name;
+  baselineReadPending = true;
   const ticket = revision, baselineTicket = ++baselineRevision;
   const isCurrent = () => ticket === revision && baselineTicket === baselineRevision;
-  if (file.size > 1048576) { $('notice').textContent = '基线文件超过 1 MiB。'; return; }
+  if (file.size > 1048576) {
+    baselineReadPending = false;
+    $('baseline-origin').textContent = '比较基线：未载入 · ' + file.name;
+    $('notice').textContent = '基线文件超过 1 MiB。'; return;
+  }
   try {
     const text = await file.text(); if (!isCurrent()) return;
+    baselineReadPending = false;
     baselineText = text; baselineName = file.name;
+    $('baseline-origin').textContent = '比较基线：本地文件 · ' + file.name;
     $('notice').textContent = '';
     if (result) await renderComparison(); else $('notice').textContent = '已读取基线，请先运行当前数据。';
-  } catch (error) { if (isCurrent()) $('notice').textContent = '基线读取失败：' + error.message; }
+  } catch (error) {
+    if (isCurrent()) {
+      baselineReadPending = false;
+      $('baseline-origin').textContent = '比较基线：读取失败 · ' + file.name;
+      $('notice').textContent = '基线读取失败：' + error.message;
+    }
+  }
 };
 $('compare-demo').onclick = async () => {
   clearBaseline();
@@ -285,6 +309,8 @@ $('compare-demo').onclick = async () => {
     const [before, after] = await Promise.all(responses.map(response => response.json()));
     if (ticket !== revision) return;
     baselineText = JSON.stringify(before); baselineName = '预训练修复前';
+    $('baseline-origin').textContent = '比较基线：演示 · 预训练修复前';
+    $('data-origin').textContent = '当前数据：演示 · 预训练修复后';
     $('clear-baseline').hidden = false;
     $('format').value = 'json'; $('preset').value = 'pretraining';
     $('input').value = JSON.stringify(after, null, 2); await run();

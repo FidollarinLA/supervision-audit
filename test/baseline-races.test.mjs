@@ -41,6 +41,7 @@ test('baseline reads respect replacement, clearing and input changes', async t =
     assert.match(heading(),/^new.json/);
     pending.resolve(bad); await earlier;
     assert.match(heading(),/^new.json/);
+    assert.match(get('baseline-origin').textContent,/本地文件.*new.json/);
     assert.match(get('comparison').children[0].children[1].textContent,/0 项新增问题 · 0 项已消失问题/);
   });
 
@@ -49,6 +50,7 @@ test('baseline reads respect replacement, clearing and input changes', async t =
     const reading=select('cancelled.json',()=>pending.promise);
     get('clear-baseline').onclick();
     pending.resolve(bad); await reading;
+    assert.equal(get('baseline-origin').textContent,'比较基线：未选择');
     assert.equal(get('comparison-panel').hidden,true);
     await get('run').onclick();
     assert.equal(get('comparison-panel').hidden,true);
@@ -61,6 +63,7 @@ test('baseline reads respect replacement, clearing and input changes', async t =
     const notice=get('notice').textContent;
     pending.reject(new Error('obsolete read failure')); await earlier;
     assert.match(heading(),/^latest.json/);
+    assert.match(get('baseline-origin').textContent,/latest.json/);
     assert.equal(get('notice').textContent,notice);
   });
 
@@ -71,6 +74,7 @@ test('baseline reads respect replacement, clearing and input changes', async t =
     pending.resolve(bad); await earlier;
     assert.equal(get('comparison-panel').hidden,true);
     assert.match(get('notice').textContent,/基线文件超过/);
+    assert.match(get('baseline-origin').textContent,/未载入.*large.json/);
     await get('run').onclick();
     assert.equal(get('comparison-panel').hidden,true);
   });
@@ -80,10 +84,12 @@ test('baseline reads respect replacement, clearing and input changes', async t =
       const pending=deferred();
       const reading=select('old-input.json',()=>pending.promise);
       get('input').oninput();
+      assert.match(get('baseline-origin').textContent,/未载入.*重新选择/);
       const notice=get('notice').textContent;
       if (outcome==='success') pending.resolve(good);
       else pending.reject(new Error('belongs to old input'));
       await reading;
+      assert.match(get('baseline-origin').textContent,/未载入.*重新选择/);
       assert.equal(get('notice').textContent,notice);
       assert.equal(get('comparison-panel').hidden,true);
     }
@@ -92,6 +98,7 @@ test('baseline reads respect replacement, clearing and input changes', async t =
     await get('run').onclick();
     await select('broken.json',async()=>{throw new Error('current read failure');});
     assert.match(get('notice').textContent,/基线读取失败：current read failure/);
+    assert.match(get('baseline-origin').textContent,/读取失败.*broken.json/);
     assert.equal(get('comparison-panel').hidden,true);
     assert.equal(get('clear-baseline').hidden,false);
     get('clear-baseline').onclick();

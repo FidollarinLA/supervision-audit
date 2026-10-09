@@ -28,6 +28,7 @@ test('interface renders engine evidence, navigates tokens and clears stale resul
  globalThis.document={getElementById:get,createElement:tag=>new Node(tag)};
  globalThis.fetch=async path=>({ok:true,json:async()=>JSON.parse(await readFile(new URL('../web/'+path,import.meta.url),'utf8'))});
  await import('../web/app.js');
+ assert.match(get('data-origin').textContent,/演示.*role-leak/);
  get('import-data').onclick();assert.equal(get('file').clicked,true);
  get('import-baseline').onclick();assert.equal(get('baseline').clicked,true);
  assert.equal(get('metrics').children[0].children[1].textContent,'发现错误');
@@ -37,6 +38,8 @@ test('interface renders engine evidence, navigates tokens and clears stale resul
  get('preset').value='healthy';await get('preset').onchange();
  assert.equal(get('metrics').children[0].children[1].textContent,'通过');
  await get('compare-demo').onclick();
+ assert.match(get('data-origin').textContent,/预训练修复后/);
+ assert.match(get('baseline-origin').textContent,/预训练修复前/);
  assert.equal(get('comparison-panel').hidden,false);
  assert.match(get('comparison').children[0].children[1].textContent,/0 项新增问题 · 2 项已消失问题/);
  assert.equal(get('metrics').children[0].children[1].textContent,'通过');
@@ -68,11 +71,13 @@ test('interface renders engine evidence, navigates tokens and clears stale resul
  await get('run').onclick();
  assert.equal(get('metrics').children[0].children[1].textContent,'通过');
  get('input').oninput();
+ assert.match(get('data-origin').textContent,/手动编辑/);
  assert.equal(get('preset').value,'custom');
  assert.equal(get('comparison-panel').hidden,true);
  assert.equal(get('export').disabled,true);
  get('file').files=[{name:'pretrain.jsonl',size:150,text:async()=>'{"input_ids":[10,11],"labels":[-100,11],"attention_mask":[1,1]}'}];
  get('policy').value='text';await get('file').onchange();
+ assert.match(get('data-origin').textContent,/本地文件.*pretrain.jsonl/);
  assert.equal(get('preset').value,'custom');
  assert.equal(get('format').value,'jsonl');
  assert.equal(get('metrics').children[0].children[1].textContent,'需复核');
