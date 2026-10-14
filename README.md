@@ -33,7 +33,7 @@ node prepared-audit.mjs audit-document.json
 
 ## 三分钟跑起来
 
-先安装 [官方 MoonBit 工具链](https://docs.moonbitlang.com/en/latest/first-steps.html)，并准备 Node.js 22 或更新版本。
+先安装 [官方 MoonBit 工具链](https://docs.moonbitlang.com/en/latest/first-steps.html)（本轮兼容性检查使用 0.1.20261012 / moonc v0.10.15），并准备 Node.js 22 或更新版本。旧版工具链可能不识别新版格式化器输出的 `Int32` 类型名，请先更新工具链。
 
 ```sh
 git clone https://github.com/FidollarinLA/supervision-audit.git

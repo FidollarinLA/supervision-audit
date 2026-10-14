@@ -1,26 +1,26 @@
 ///|
 pub(all) struct Span {
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
   role : String
 } derive(FromJson, ToJson)
 
 ///|
 pub(all) struct Segment {
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
   source_id : String
 } derive(FromJson, ToJson)
 
 ///|
 pub(all) struct Sample {
   id : String
-  input_ids : Array[Int]
-  labels : Array[Int]
-  attention_mask : Array[Int]
+  input_ids : Array[Int32]
+  labels : Array[Int32]
+  attention_mask : Array[Int32]
   spans : Array[Span]
   segments : Array[Segment]
-  original_supervised_tokens : Int?
+  original_supervised_tokens : Int32?
   expected_supervision : ExpectedSupervision?
 } derive(FromJson, ToJson)
 
@@ -29,7 +29,7 @@ pub(all) struct Sample {
 pub(all) struct ExpectedSupervision {
   schema : String
   source : String
-  mask : Array[Int]
+  mask : Array[Int32]
 } derive(Eq, FromJson, ToJson)
 
 ///|
@@ -45,19 +45,19 @@ pub(all) struct Finding {
   code : String
   severity : String
   sample_id : String
-  token_index : Int?
+  token_index : Int32?
   message : String
 } derive(ToJson)
 
 ///|
 pub(all) struct SampleReport {
   id : String
-  tokens : Int
-  supervised_tokens : Int
-  effective_target_indices : Array[Int]
+  tokens : Int32
+  supervised_tokens : Int32
+  effective_target_indices : Array[Int32]
   expectation_status : String
   expectation_source : String?
-  expected_target_indices : Array[Int]?
+  expected_target_indices : Array[Int32]?
   supervised_ratio : Double
   roles : Array[String]
   states : Array[String]
@@ -71,13 +71,13 @@ pub(all) struct Report {
   contract : String
   boundary_policy : String
   status : String
-  sample_count : Int
-  token_count : Int
-  supervised_tokens : Int
-  effective_target_count : Int
-  error_count : Int
-  warning_count : Int
-  unknown_count : Int
+  sample_count : Int32
+  token_count : Int32
+  supervised_tokens : Int32
+  effective_target_count : Int32
+  error_count : Int32
+  warning_count : Int32
+  unknown_count : Int32
   samples : Array[SampleReport]
   findings : Array[Finding]
 } derive(ToJson)
@@ -87,7 +87,7 @@ fn finding(
   code : String,
   severity : String,
   id : String,
-  index : Int?,
+  index : Int32?,
   message : String,
 ) -> Finding {
   { code, severity, sample_id: id, token_index: index, message, }
@@ -99,7 +99,7 @@ fn check_sample(
   allowed : Array[String],
   boundary : String,
   details~ : Bool,
-) -> (SampleReport, Int) {
+) -> (SampleReport, Int32) {
   let n = s.input_ids.length()
   let findings : Array[Finding] = []
   let roles = Array::make(n, "unknown")
@@ -215,7 +215,7 @@ fn check_sample(
     }
   }
   let mut supervised = 0
-  let effective_target_indices : Array[Int] = []
+  let effective_target_indices : Array[Int32] = []
   let mut effective_targets = 0
   let mut missing_role = false
   let mut missing_source = false
@@ -786,7 +786,7 @@ fn check_expectation(
   sources : Array[String],
   findings : Array[Finding],
   details~ : Bool,
-) -> (String, String?, Array[Int]?) {
+) -> (String, String?, Array[Int32]?) {
   guard s.expected_supervision is Some(e) else {
     return ("not-provided", None, None)
   }
@@ -808,7 +808,7 @@ fn check_expectation(
     )
     return ("invalid", Some(e.source), None)
   }
-  let indices : Array[Int] = []
+  let indices : Array[Int32] = []
   let mut conflict = false
   let blocked_starts = Array::make(n, false)
   if boundary == "mask-cross-source" {

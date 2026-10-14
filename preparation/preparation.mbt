@@ -11,18 +11,18 @@ pub(all) struct TrainingPolicy {
 
 ///|
 pub(all) struct CandidateSpan {
-  start : Int
-  end : Int
-  source_start : Int
-  source_end : Int
+  start : Int32
+  end : Int32
+  source_start : Int32
+  source_end : Int32
   kind : String
   role : String
 } derive(FromJson, ToJson)
 
 ///|
 pub(all) struct TokenOffset {
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
 } derive(FromJson, ToJson)
 
 ///|
@@ -31,8 +31,8 @@ pub(all) struct PreparedRow {
   id : String
   source : String
   text : String
-  input_ids : Array[Int]
-  attention_mask : Array[Int]
+  input_ids : Array[Int32]
+  attention_mask : Array[Int32]
   offsets : Array[TokenOffset]
   candidates : Array[CandidateSpan]
 } derive(FromJson, ToJson)

@@ -1,26 +1,26 @@
 ///|
 pub(all) struct Span {
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
   role : String
 } derive(FromJson, ToJson)
 
 ///|
 pub(all) struct Segment {
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
   source_id : String
 } derive(FromJson, ToJson)
 
 ///|
 pub(all) struct Sample {
   id : String
-  input_ids : Array[Int]
-  labels : Array[Int]
-  attention_mask : Array[Int]
+  input_ids : Array[Int32]
+  labels : Array[Int32]
+  attention_mask : Array[Int32]
   spans : Array[Span]
   segments : Array[Segment]
-  original_supervised_tokens : Int?
+  original_supervised_tokens : Int32?
 } derive(FromJson, ToJson)
 
 ///|
@@ -35,16 +35,16 @@ pub(all) struct Finding {
   code : String
   severity : String
   sample_id : String
-  token_index : Int?
+  token_index : Int32?
   message : String
 } derive(ToJson)
 
 ///|
 pub(all) struct SampleReport {
   id : String
-  tokens : Int
-  supervised_tokens : Int
-  prediction_targets : Int?
+  tokens : Int32
+  supervised_tokens : Int32
+  prediction_targets : Int32?
   supervised_ratio : Double
   roles : Array[String]
   states : Array[String]
@@ -57,13 +57,13 @@ pub(all) struct Report {
   schema_version : String
   contract : String
   status : String
-  sample_count : Int
-  token_count : Int
-  supervised_tokens : Int
-  prediction_targets : Int?
-  error_count : Int
-  warning_count : Int
-  unknown_count : Int
+  sample_count : Int32
+  token_count : Int32
+  supervised_tokens : Int32
+  prediction_targets : Int32?
+  error_count : Int32
+  warning_count : Int32
+  unknown_count : Int32
   samples : Array[SampleReport]
   findings : Array[Finding]
 } derive(ToJson)
@@ -73,7 +73,7 @@ fn finding(
   code : String,
   severity : String,
   id : String,
-  index : Int?,
+  index : Int32?,
   message : String,
 ) -> Finding {
   { code, severity, sample_id: id, token_index: index, message, }
@@ -82,7 +82,7 @@ fn finding(
 ///|
 // Count non-ignored targets after the model-internal shift. Invalid shapes or
 // token/label/mask values leave the count unknown, rather than reporting zero.
-fn count_prediction_targets(s : Sample) -> Int? {
+fn count_prediction_targets(s : Sample) -> Int32? {
   let n = s.input_ids.length()
   if n == 0 || s.labels.length() != n || s.attention_mask.length() != n {
     return None
@@ -419,7 +419,7 @@ pub fn audit(doc : Document) -> Report {
   let samples : Array[SampleReport] = []
   let mut token_count = 0
   let mut supervised_tokens = 0
-  let mut prediction_targets : Int? = Some(0)
+  let mut prediction_targets : Int32? = Some(0)
   if doc.contract != "causal-lm-unshifted-v1" {
     findings.push(
       finding(
@@ -586,7 +586,7 @@ pub fn audit(doc : Document) -> Report {
 ///|
 /// Shared bridge input budget in UTF-16 code units, not file bytes.
 #export_name("input_limit_utf16")
-pub fn input_limit_utf16() -> Int {
+pub fn input_limit_utf16() -> Int32 {
   1048576
 }
 
