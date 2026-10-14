@@ -29,7 +29,7 @@ fn finding_key(f : Finding) -> String {
   let key : Json = {
     "code": f.code,
     "sample": f.sample_id,
-    "token": f.token_index.to_json(),
+    "token": Json(f.token_index),
     "severity": f.severity,
   }
   key.stringify()

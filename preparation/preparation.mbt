@@ -156,7 +156,7 @@ pub fn normalize_traces_json(text : String) -> String {
             "Row \{id}: function parameters must be an object schema",
           )
         }
-        if parameters.get("type") != Some("object".to_json()) {
+        if parameters.get("type") != Some(Json("object")) {
           return error_json(
             "Row \{id}: only object parameter schemas are supported",
           )
@@ -209,8 +209,8 @@ pub fn normalize_traces_json(text : String) -> String {
             )
         }
         let fields : Map[String, Json] = {
-          "role": role.to_json(),
-          "content": content.to_json(),
+          "role": Json(role),
+          "content": Json(content),
         }
         match json_field(message, "reasoning_content") {
           None | Some(Null) => ()
@@ -220,7 +220,7 @@ pub fn normalize_traces_json(text : String) -> String {
                 "Row \{id}: reasoning_content requires assistant role",
               )
             }
-            fields.set("reasoning_content", value.to_json())
+            fields.set("reasoning_content", Json(value))
           }
           _ => return error_json("Row \{id}: reasoning_content must be text")
         }
@@ -290,7 +290,7 @@ pub fn normalize_traces_json(text : String) -> String {
                 "function": { "name": name, "arguments": arguments },
               })
             }
-            fields.set("tool_calls", normalized_calls.to_json())
+            fields.set("tool_calls", Json(normalized_calls))
           }
           _ => return error_json("Row \{id}: tool_calls must be an array")
         }
@@ -309,12 +309,12 @@ pub fn normalize_traces_json(text : String) -> String {
             )
           }
           pending.remove(call_id) |> ignore
-          fields.set("tool_call_id", call_id.to_json())
-          fields.set("name", name.to_json())
+          fields.set("tool_call_id", Json(call_id))
+          fields.set("name", Json(name))
         } else if json_field(message, "tool_call_id") is Some(_) {
           return error_json("Row \{id}: tool_call_id requires tool role")
         }
-        canonical.push(fields.to_json())
+        canonical.push(Json(fields))
       }
       if pending.length() > 0 ||
         json_text(messages[messages.length() - 1], "role") != "assistant" {
@@ -325,14 +325,14 @@ pub fn normalize_traces_json(text : String) -> String {
       normalized.push({
         "id": id,
         "source": source,
-        "messages": canonical.to_json(),
-        "tools": tools.to_json(),
+        "messages": Json(canonical),
+        "tools": Json(tools),
       })
     }
     let result : Json = {
       "ok": true,
       "schema": "normalized-traces-v1",
-      "rows": normalized.to_json(),
+      "rows": Json(normalized),
     }
     result.stringify()
   } catch {
@@ -560,7 +560,7 @@ pub fn prepare_labels_json(text : String, policy_text : String) -> String {
       "policy": policy.to_json(),
       "tokenizer_source": input.tokenizer_source,
       "template_source": input.template_source,
-      "coverage": coverage.to_json(),
+      "coverage": Json(coverage),
       "document": doc.to_json(),
       "report": report.to_json(),
       "expectation_basis": "same-preparation-policy; independent Teich comparison is separate",
