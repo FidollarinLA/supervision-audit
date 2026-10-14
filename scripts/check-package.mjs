@@ -16,7 +16,8 @@ try {
   if (!name || !version) throw new Error('Unsupported module name/version; inspect moon.mod');
   process.stdout.write(run(moon, ['package', '--frozen', '--target-dir', join(temp, 'build')], root));
   const archive = join(temp, 'build/publish', `${name.replaceAll('/', '-')}-${version}.zip`);
-  const entries = run('unzip', ['-Z1', archive], root).trim().split('\n');
+  const python = process.env.PYTHON || (process.platform === 'win32' ? 'python' : 'python3');
+  const entries = JSON.parse(run(python, ['-c', 'import json,sys,zipfile; print(json.dumps(zipfile.ZipFile(sys.argv[1]).namelist()))', archive], root));
   const tracked = new Set(run('git', ['ls-files', '-z'], root).split('\0'));
   for (const entry of entries) {
     if (!tracked.has(entry) || entry.split('/').some(part => part === '..' || part.startsWith('.')) || entry.includes('\\')) {
@@ -31,11 +32,11 @@ try {
   }
   const library = join(temp, 'library'), consumer = join(temp, 'consumer');
   await mkdir(library); await mkdir(consumer);
-  run('unzip', ['-q', archive, '-d', library], root);
+  run(python, ['-c', 'import sys,zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])', archive, library], root);
   await writeFile(join(temp, 'moon.work'), 'members = ["library", "consumer"]\n');
   await writeFile(join(consumer, 'moon.mod'), `name = "local/package_consumer"\nimport { "${name}@${version}" }\n`);
-  await writeFile(join(consumer, 'moon.pkg'), `import { "${name}" @audit, "moonbitlang/core/json" } for "test"\n`);
-  await writeFile(join(consumer, 'consumer_test.mbt'), await readFile(join(root, 'test/consumer.mbt.fixture')));
+  await writeFile(join(consumer, 'moon.pkg'), `import { "${name}" @audit, "${name}/preparation" @preparation, "moonbitlang/core/json" } for "test"\n`);
+  await writeFile(join(consumer, 'consumer_test.mbt'), (await readFile(join(root, 'test/consumer.mbt.fixture'), 'utf8')) + '\n' + (await readFile(join(root, 'test/preparation-consumer.mbt.fixture'),'utf8')));
   for (const target of ['js', 'wasm-gc', 'native']) {
     process.stdout.write(`${target}: ` + run(moon, ['test', '--frozen', '--package', 'local/package_consumer', '--target', target, '--deny-warn'], consumer));
   }

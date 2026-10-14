@@ -1,0 +1,21 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {executeEngineJob} from '../web/engine-job.js';
+import {prepare_labels_json} from '../web/preparation-engine.js';
+const load=name=>JSON.parse(readFileSync(new URL('../examples/'+name,import.meta.url),'utf8'));
+test('prepared evidence uses complete target gate while legacy v1 reports remain compatible',()=>{
+ const data=load('traces/qwen-rendered.json'),policy=load('traces/assistant-all.json');
+ const document=JSON.parse(prepare_labels_json(JSON.stringify(data),JSON.stringify(policy))).document;
+ const index=document.samples[0].expected_supervision.mask.findIndex(x=>x===1);
+ const before=JSON.stringify(document);document.samples[0].labels[index]=-100;
+ const bad=executeEngineJob({kind:'audit',format:'json',text:JSON.stringify(document)});
+ assert.equal(bad.report.status,'fail');assert.equal(bad.report.report_schema,'supervision-audit-report-v2');
+ assert.ok(bad.report.findings.some(f=>f.code==='EXPECTED_TARGET_MISSING'));
+ const changed=structuredClone(document);changed.samples[0].expected_supervision.mask[index]=0;
+ const comparison=executeEngineJob({kind:'compare',before,after:JSON.stringify(changed)});
+ assert.equal(comparison.ok,false);assert.match(comparison.error,/identical expected evidence/);
+ const legacy=executeEngineJob({kind:'audit',format:'json',text:JSON.stringify(load('healthy.json'))});
+ assert.equal(legacy.report.status,'pass');assert.equal(legacy.report.schema_version,'supervision-audit/report/v1');
+ assert.equal(legacy.report.report_schema,undefined);
+});

@@ -1,0 +1,9 @@
+///|
+test "external preparation consumer uses typed policy and normalization" {
+  let policy : @preparation.TrainingPolicy = @preparation.default_training_policy()
+  assert_true(policy.train_on_tools)
+  assert_false(policy.train_on_tool_responses)
+  let raw =
+    #|{"rows":[{"id":"one","source":"authored","messages":[{"role":"user","content":"hi"},{"role":"assistant","content":"hello"}]}]}
+  assert_true(@json.parse(@preparation.normalize_traces_json(raw)) is Object(fields) && fields.get("ok") is Some(True))
+}

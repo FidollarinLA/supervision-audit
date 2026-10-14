@@ -1,0 +1,256 @@
+{
+  "schema": "teich-cross-validation-v1",
+  "teich_revision": "609412fcb5649268b6de3f789fc0d59c4dce0585",
+  "teich_reference": "public prepare_data/mask_data APIs",
+  "shared_component": "Teich rendering/candidate spans",
+  "independent_component": "MoonBit label assembly versus Teich mask_data",
+  "scope": "Qwen native text/tool traces; authored reasoning template. No training-quality claim.",
+  "environment": {
+    "python": "3.12.10",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "datasets": "4.8.3",
+    "transformers": "4.57.1",
+    "tokenizers": "0.22.1",
+    "pandas": "3.0.1",
+    "numpy": "2.3.5"
+  },
+  "raw_sha256": "ab9947ef9a979249bb125af9c29adb4d1a729efe0bf28b8dcbfb63332c179c86",
+  "checks": [
+    {
+      "backend": "qwen-native",
+      "id": "chat-multiturn",
+      "policy": "assistant_all",
+      "result": "exact-label-match",
+      "tokens": 52,
+      "effective_targets": 12
+    },
+    {
+      "backend": "qwen-native",
+      "id": "chat-multiturn",
+      "policy": "final_only",
+      "result": "exact-label-match",
+      "tokens": 52,
+      "effective_targets": 12
+    },
+    {
+      "backend": "qwen-native",
+      "id": "chat-multiturn",
+      "policy": "tool_only",
+      "result": "both-reject-empty-targets"
+    },
+    {
+      "backend": "qwen-native",
+      "id": "chat-multiturn",
+      "policy": "reasoning_only",
+      "result": "both-reject-empty-targets"
+    },
+    {
+      "backend": "qwen-native",
+      "id": "chat-multiturn",
+      "policy": "assistant_and_tool_results",
+      "result": "exact-label-match",
+      "tokens": 52,
+      "effective_targets": 12
+    },
+    {
+      "backend": "qwen-native",
+      "id": "chat-multiturn",
+      "policy": "all_roles",
+      "result": "exact-label-match",
+      "tokens": 52,
+      "effective_targets": 31
+    },
+    {
+      "backend": "qwen-native",
+      "id": "agent-tool-round",
+      "policy": "assistant_all",
+      "result": "exact-label-match",
+      "tokens": 216,
+      "effective_targets": 33
+    },
+    {
+      "backend": "qwen-native",
+      "id": "agent-tool-round",
+      "policy": "final_only",
+      "result": "exact-label-match",
+      "tokens": 216,
+      "effective_targets": 12
+    },
+    {
+      "backend": "qwen-native",
+      "id": "agent-tool-round",
+      "policy": "tool_only",
+      "result": "exact-label-match",
+      "tokens": 216,
+      "effective_targets": 21
+    },
+    {
+      "backend": "qwen-native",
+      "id": "agent-tool-round",
+      "policy": "reasoning_only",
+      "result": "both-reject-empty-targets"
+    },
+    {
+      "backend": "qwen-native",
+      "id": "agent-tool-round",
+      "policy": "assistant_and_tool_results",
+      "result": "exact-label-match",
+      "tokens": 216,
+      "effective_targets": 48
+    },
+    {
+      "backend": "qwen-native",
+      "id": "agent-tool-round",
+      "policy": "all_roles",
+      "result": "exact-label-match",
+      "tokens": 216,
+      "effective_targets": 62
+    },
+    {
+      "backend": "qwen-native",
+      "result": "injected-tool-target-blocked",
+      "index": 184
+    },
+    {
+      "backend": "authored-reasoning",
+      "id": "chat-multiturn",
+      "policy": "assistant_all",
+      "result": "exact-label-match",
+      "tokens": 121,
+      "effective_targets": 16
+    },
+    {
+      "backend": "authored-reasoning",
+      "id": "chat-multiturn",
+      "policy": "final_only",
+      "result": "exact-label-match",
+      "tokens": 121,
+      "effective_targets": 16
+    },
+    {
+      "backend": "authored-reasoning",
+      "id": "chat-multiturn",
+      "policy": "tool_only",
+      "result": "both-reject-empty-targets"
+    },
+    {
+      "backend": "authored-reasoning",
+      "id": "chat-multiturn",
+      "policy": "reasoning_only",
+      "result": "both-reject-empty-targets"
+    },
+    {
+      "backend": "authored-reasoning",
+      "id": "chat-multiturn",
+      "policy": "assistant_and_tool_results",
+      "result": "exact-label-match",
+      "tokens": 121,
+      "effective_targets": 16
+    },
+    {
+      "backend": "authored-reasoning",
+      "id": "chat-multiturn",
+      "policy": "all_roles",
+      "result": "exact-label-match",
+      "tokens": 121,
+      "effective_targets": 73
+    },
+    {
+      "backend": "authored-reasoning",
+      "id": "agent-tool-round",
+      "policy": "assistant_all",
+      "result": "exact-label-match",
+      "tokens": 280,
+      "effective_targets": 132
+    },
+    {
+      "backend": "authored-reasoning",
+      "id": "agent-tool-round",
+      "policy": "final_only",
+      "result": "exact-label-match",
+      "tokens": 280,
+      "effective_targets": 55
+    },
+    {
+      "backend": "authored-reasoning",
+      "id": "agent-tool-round",
+      "policy": "tool_only",
+      "result": "exact-label-match",
+      "tokens": 280,
+      "effective_targets": 77
+    },
+    {
+      "backend": "authored-reasoning",
+      "id": "agent-tool-round",
+      "policy": "reasoning_only",
+      "result": "both-reject-empty-targets"
+    },
+    {
+      "backend": "authored-reasoning",
+      "id": "agent-tool-round",
+      "policy": "assistant_and_tool_results",
+      "result": "exact-label-match",
+      "tokens": 280,
+      "effective_targets": 166
+    },
+    {
+      "backend": "authored-reasoning",
+      "id": "agent-tool-round",
+      "policy": "all_roles",
+      "result": "exact-label-match",
+      "tokens": 280,
+      "effective_targets": 232
+    },
+    {
+      "backend": "authored-reasoning",
+      "id": "explicit-reasoning",
+      "policy": "assistant_all",
+      "result": "exact-label-match",
+      "tokens": 118,
+      "effective_targets": 51
+    },
+    {
+      "backend": "authored-reasoning",
+      "id": "explicit-reasoning",
+      "policy": "final_only",
+      "result": "exact-label-match",
+      "tokens": 118,
+      "effective_targets": 7
+    },
+    {
+      "backend": "authored-reasoning",
+      "id": "explicit-reasoning",
+      "policy": "tool_only",
+      "result": "both-reject-empty-targets"
+    },
+    {
+      "backend": "authored-reasoning",
+      "id": "explicit-reasoning",
+      "policy": "reasoning_only",
+      "result": "exact-label-match",
+      "tokens": 118,
+      "effective_targets": 46
+    },
+    {
+      "backend": "authored-reasoning",
+      "id": "explicit-reasoning",
+      "policy": "assistant_and_tool_results",
+      "result": "exact-label-match",
+      "tokens": 118,
+      "effective_targets": 51
+    },
+    {
+      "backend": "authored-reasoning",
+      "id": "explicit-reasoning",
+      "policy": "all_roles",
+      "result": "exact-label-match",
+      "tokens": 118,
+      "effective_targets": 89
+    },
+    {
+      "backend": "authored-reasoning",
+      "result": "injected-tool-target-blocked",
+      "index": 178
+    }
+  ]
+}

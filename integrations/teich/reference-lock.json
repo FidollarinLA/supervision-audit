@@ -1,0 +1,31 @@
+{
+  "git_blobs": {
+    "extract.py": "f82bc9525af60899c08504c2248d555685a715e6",
+    "converter.py": "d3405253bc400a5b85d9fb63d4937ad9f8efaecd",
+    "anonymize.py": "71f9e1858779648ac6e50f631b4b8b4f517b28fb",
+    "studio/__init__.py": "1918135f0dcc62c9c4eace7141f06ef60177af95",
+    "codex_auth_broker.py": "3ae5082f9ce7d3240649d49b34ff5528a3c12fbd",
+    "studio/dataset_preview.py": "87f1abd6077074433a0ad4fe0a914d495e8f9d1d",
+    "studio/server.py": "f8326be667271463bb1666cae29eaec4630eeb46",
+    "__main__.py": "9ae637f13cd528a1823ec240ed01b3bdaaa19967",
+    "studio/events.py": "a4e40617c11f9564a6c64ebe11be3c08b1b970f5",
+    "harness_capture.py": "8ca0bf06ea951243f1c707ef203b530a229ea888",
+    "protocol.py": "0540278b673cc76ac03fdf67a0b4155114a4e436",
+    "prepare.py": "3e23f8d4d5be4cb921615e76541080db97eed78a",
+    "cli.py": "0acbc7d410949b1aa45704f3f2ae2ff4b945a4b7",
+    "trace_readme.py": "b1a2a74664f2c575f537e87124f39328514390d7",
+    "__init__.py": "f7ff1fc3e58dc87a2562c6d00649048f895c6e20",
+    "tool_schema.py": "e31c3af44319950c3dcdcc79a8c7128a46c76746",
+    "formatter.py": "06aed24a6f2546f58ed2056b2327951c59fde777",
+    "studio/generation.py": "9d2ea651a8b33be82a8d83969825e43d1aa77a76",
+    "audit.py": "30c71ed03b47b01f1f7adf1943a04f9b7fcdaff0",
+    "runner.py": "5c5b2eda486a499933ab39f600d98d95c919bac2",
+    "studio/interactive.py": "6a52d5a645cdf1103540d141856f475d3bc498ff",
+    "config.py": "7cceb71de910dd02c18c2e0eb84d010c87bf412e",
+    "studio/project.py": "4403d8f62d86829ee72714eecc0dc1756327cc28",
+    "loader.py": "85036793ef1c3aa756242fb9cf258c6a9ed6dabd",
+    "studio/extraction.py": "dea99be49cf1e26b3ded573f942975c659c28e1f"
+  },
+  "source": "https://github.com/TeichAI/teich",
+  "revision": "609412fcb5649268b6de3f789fc0d59c4dce0585"
+}

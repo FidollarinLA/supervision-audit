@@ -1,0 +1,2 @@
+import {normalize_traces_json,prepare_labels_json} from './preparation-engine.js';
+self.onmessage=({data:{id,request}})=>{try{const result=JSON.parse(request.op==='normalize'?normalize_traces_json(request.text):request.op==='prepare'?prepare_labels_json(request.text,JSON.stringify(request.policy)):JSON.stringify({ok:false,error:'Unknown preparation operation'}));if(!result.ok)throw Error(result.error);self.postMessage({id,payload:{result,document:result.document}});}catch(error){self.postMessage({id,error:error.message});}};

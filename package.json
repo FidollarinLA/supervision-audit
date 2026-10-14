@@ -9,6 +9,9 @@
     "audit": "node cli.mjs",
     "benchmark": "node scripts/benchmark.mjs",
     "check:package": "node scripts/check-package.mjs",
-    "check:registry": "node scripts/check-registry.mjs"
+    "check:registry": "node scripts/check-registry.mjs",
+    "prepare": "node prepare.mjs",
+    "audit:prepared": "node prepared-audit.mjs",
+    "verify:teich": "python integrations/teich/verify.py"
   }
 }

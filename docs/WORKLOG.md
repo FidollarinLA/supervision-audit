@@ -166,3 +166,8 @@ README、契约与路线同步，新增 streaming-boundaries.md。明确应用�
 六项集成测试覆盖 stdin 与文件报告逐项一致及原退出码、中文/emoji 的 JSONL、比较任一侧、空输入/损坏尾部/超限有效前缀、双 stdin 不覆盖已有报告、文件导出与 stderr 摘要。完整 Node 测试从 50 增至 56 项，全部通过；moon info、moon fmt、git diff --check 完成，接口无变化。README 提供可执行命令并明确依然不是逐行增量审计，超限关闭管道可能让上游收到断管。
 
 两项改进各按真实功能完成一次提交，不凑次数，不改历史、不恢复自动任务、不另发 Mooncakes 版本；仅 Web/CLI 接入变化，已发布的 MoonBit 0.1.0 核心保持不变。推送和最新远端 CI 以本次交付结果为准。
+
+
+## 2026-10-13 初审反馈：训练数据准备
+
+新增 preparation MoonBit 包：原始轨迹校验 → 可选固定 Teich/HF 原生模板与分词 → MoonBit 六类监督策略/labels → 预期目标与审计门禁 → 训练 JSONL、证据页和 CI。沿用最新主分支的 v1 库/API/CLI 管道；新包的证据格式和高级比较各自明确。实际 Teich 23 组标签一致/7 组空目标双方拒绝/2 个故障门禁。完整实现与范围见 [复审说明](review-response-2026-10-13.md) 及 [准备合同](training-preparation.md)。本人报名更新、外部用户收益与官方通过没有代替或虚构。
