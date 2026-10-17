@@ -24,6 +24,8 @@ pub fn normalize_traces_json(String) -> String
 
 pub fn prepare_labels_json(String, String) -> String
 
+pub fn prepare_training_json(String, String, String) -> String
+
 // Errors
 
 // Types and methods
@@ -149,6 +151,13 @@ pub(all) struct Segment {
 } derive(ToJson, @json.FromJson)
 pub fn Segment::from_json(Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
 pub fn Segment::to_json(Self) -> Json
+
+pub(all) struct SequenceLimits {
+  max_length : Int
+  overflow : String
+} derive(ToJson, @json.FromJson)
+pub fn SequenceLimits::from_json(Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
+pub fn SequenceLimits::to_json(Self) -> Json
 
 pub(all) struct Span {
   start : Int

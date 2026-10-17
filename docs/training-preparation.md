@@ -19,6 +19,22 @@ node prepare.mjs examples/traces/qwen-rendered.json --rendered --policy examples
 
 运行静态服务器后打开 `/prepare.html`。可以导入原始 JSON 做校验、导入实际分词结果、切换六类策略、导出报告/文档/训练 JSONL；“查看 token 证据”通过同一浏览器标签页临时传递审计文档，审计页读取后删除暂存。没有上传接口。大任务在可取消 Worker 中执行，编辑输入或改变策略清除旧结果。
 
+## 训练序列上限（2026-10-18）
+
+新增 `prepare_training_json(rendered, policy, limits)` 和可序列化的 `SequenceLimits`，共享原有完整标签准备和审计核心。`limits` 必须明确提供 `max_length`（2–100000 整数）与 `overflow`（`reject` 或 `truncate-right`），拒绝未知字段。旧 `prepare_labels_json` 入口行为保留。
+
+```sh
+node prepare.mjs examples/traces/qwen-rendered.json --rendered --max-length 192
+node prepare.mjs examples/traces/qwen-rendered.json --rendered --max-length 192 --overflow truncate-right --out length-report.json
+node prepare.mjs examples/traces/qwen-rendered.json --rendered --max-length 192 --overflow truncate-right --emit jsonl --out training.jsonl
+```
+
+第一条命令因工具轨迹为 216 token 而拒绝。后两条明确选择右截断，保留 192 token 的左侧前缀；另一条 52-token 对话不变。总训练目标由 45 减为 33，移除 24 token / 12 目标。完整准备报告的 `sequence_summary` 提供逐行前后数量，`coverage.effective_targets` 描述最终输出。截断后的审计文档同步裁剪 spans、segments、expectation mask，并重新审计；预期来源标记 `right-prefix-max=192`，不能把删去预期目标当作普通修复。
+
+实现先校验完整输入，包括会被移除的尾部，之后才截断。超长默认拒绝；空目标拒绝整批、不静默丢行，也不会覆盖已有训练文件。右截断可能切在消息或工具调用内部，并可能删去最终回答；没有实现按轮次截断、左截断、自动补 EOS、padding、packing 或重分词。标准训练 JSONL 仅含 id/input_ids/labels/attention_mask，逐行截断清单在完整准备报告中，CLI 另在 stderr 提示损失；需留存策略时请同时保存完整报告。
+
+网页同样提供长度与超长处理选项，修改任一项会取消旧任务、使旧下载和 token 证据失效。未填长度时不能只选择右截断。
+
 ## 自己的原始数据
 
 原始输入为 `{"rows":[{"id":"...","source":"...","messages":[...],"tools":[...]}]}`。`tools` 可以省略。角色支持 system、user、assistant、tool；content 为文本；助手可提供 reasoning_content 和 tool_calls。函数 arguments 接受 JSON 对象或可解码为对象的 JSON 字符串。每个调用需要唯一 ID，结果用 tool_call_id 配对；支持多个待处理调用及其结果。来源由调用者声明，不认证真实性。

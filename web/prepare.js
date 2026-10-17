@@ -10,18 +10,25 @@ function download(name,value,type='application/json'){const url=URL.createObject
 async function readFile(input,target){const file=input.files[0];if(!file)return;invalidate();const ticket=revision;try{if(file.size>4*1024*1024)throw Error('文件超过 4 MiB');const text=new TextDecoder('utf-8',{fatal:true}).decode(await file.arrayBuffer());if(ticket!==revision)return;$(target).value=text;}catch(error){if(ticket===revision)$('prepare-status').textContent=error.message;}}
 function el(tag,text){const node=document.createElement(tag);node.textContent=String(text);return node;}
 async function run(op){invalidate();const ticket=revision;$('cancel-prepare').hidden=false;const status=op==='normalize'?$('raw-status'):$('prepare-status');status.textContent='正在后台处理…';try{
-  const {result:output}=await runner.run({op,text:$(op==='normalize'?'raw-input':'rendered-input').value,policy:Object.fromEntries(keys.map(key=>[key,$(key).checked]))});
+  const length=$('max-length').value;
+  if(op==='prepare' && length!=='' && !/^\d+$/.test(length))throw Error('序列长度必须是整数。');
+  const limits=op==='prepare' && length!==''?{max_length:Number(length),overflow:$('overflow').value}:undefined;
+  if(op==='prepare' && !limits && $('overflow').value!=='reject')throw Error('选择右截断前，请填写每条最多 token。');
+  const {result:output}=await runner.run({op,text:$(op==='normalize'?'raw-input':'rendered-input').value,policy:Object.fromEntries(keys.map(key=>[key,$(key).checked])),limits});
   if(ticket!==revision)return;
   if(op==='normalize'){normalized=output;normalizedText=$('raw-input').value;$('export-normalized').disabled=false;status.textContent=`已校验 ${output.rows.length} 条完整轨迹。下一步用目标模型模板分词。`;}
   else {result=output;const r=output.report;const pass=r.status==='pass';status.textContent=pass?'准备完成，训练门禁通过。可下载训练数据或查看逐 token 证据。':'门禁未通过，请下载报告并检查问题。';$('export-training').disabled=!pass;$('export-document').disabled=!pass;$('inspect-prepared').disabled=!pass;$('export-preparation').disabled=false;
     const cards=[['准备结果',pass?'通过':'需检查'],['输入样本',r.sample_count],['实际 token',r.token_count],['训练目标',r.effective_target_count]];
     $('prepare-metrics').replaceChildren(...cards.map(([title,value])=>{const node=el('div','');node.className='metric';node.append(el('small',title),el('strong',value));return node;}));
-    $('prepared-samples').replaceChildren(...r.samples.map(sample=>{const tr=el('tr','');const tool=sample.effective_target_indices.filter(i=>sample.roles[i]==='tool').length;tr.append(...[sample.id,sample.tokens,sample.effective_target_indices.length,tool,sample.findings.length?'检查报告':'通过'].map(value=>el('td',value)));return tr;}));
+    const sequence=output.sequence_summary;
+    if(sequence?.truncated_samples)status.textContent+=` 已右截断 ${sequence.truncated_samples} 条，移除 ${sequence.removed_tokens} 个 token / ${sequence.removed_targets} 个训练目标；不保证保留完整消息或工具调用。`;
+    $('prepared-samples').replaceChildren(...r.samples.map(sample=>{const tr=el('tr','');const tool=sample.effective_target_indices.filter(i=>sample.roles[i]==='tool').length;const change=sequence?.samples.find(row=>row.id===sample.id);tr.append(...[sample.id,sample.tokens,sample.effective_target_indices.length,tool,change?`${change.removed_tokens} / ${change.removed_targets}`:'0 / 0',sample.findings.length?'检查报告':'通过'].map(value=>el('td',value)));return tr;}));
     $('evidence-basis').textContent='标签按所供候选区间、token 偏移和当前策略生成。报告中的预期掩码来自同一准备策略；独立交叉验证另见项目的 Teich 验证记录。';
     $('prepared-source').textContent='Tokenizer：'+output.tokenizer_source+' · 模板：'+output.template_source;$('prepare-results').hidden=false;}
 }catch(error){if(ticket===revision && error.name!=='AbortError')status.textContent='无法处理：'+error.message;}finally{if(ticket===revision)$('cancel-prepare').hidden=true;}}
 $('normalize').onclick=()=>run('normalize');$('prepare').onclick=()=>run('prepare');$('cancel-prepare').onclick=()=>{invalidate();$('prepare-status').textContent='已取消。';};
 $('raw-input').oninput=invalidate;$('rendered-input').oninput=invalidate;for(const key of keys)$(key).onchange=invalidate;
+$('max-length').oninput=invalidate;$('overflow').onchange=invalidate;
 $('raw-file').onchange=()=>readFile($('raw-file'),'raw-input');$('rendered-file').onchange=()=>readFile($('rendered-file'),'rendered-input');
 $('export-normalized').onclick=()=>{if(normalized)download('normalized-traces.json',normalized);};
 $('export-preparation').onclick=()=>{if(result)download('training-preparation.json',result);};

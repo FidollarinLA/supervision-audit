@@ -171,3 +171,9 @@ README、契约与路线同步，新增 streaming-boundaries.md。明确应用�
 ## 2026-10-13 初审反馈：训练数据准备
 
 新增 preparation MoonBit 包：原始轨迹校验 → 可选固定 Teich/HF 原生模板与分词 → MoonBit 六类监督策略/labels → 预期目标与审计门禁 → 训练 JSONL、证据页和 CI。沿用最新主分支的 v1 库/API/CLI 管道；新包的证据格式和高级比较各自明确。实际 Teich 23 组标签一致/7 组空目标双方拒绝/2 个故障门禁。完整实现与范围见 [复审说明](review-response-2026-10-13.md) 及 [准备合同](training-preparation.md)。本人报名更新、外部用户收益与官方通过没有代替或虚构。
+
+## 2026-10-18 训练长度控制与重新申报准备
+
+新增 MoonBit SequenceLimits / prepare_training_json：完整校验后执行明确的拒绝或右截断策略，裁剪全部对齐证据并重新门禁。CLI 与可取消 Worker 网页共享核心，显示截断造成的 token/目标损失。原始准备入口与 v1 根包保持兼容。Node 68/68、JS/Wasm GC 核心各57、浏览器9项通过；82组固定 Teich 标签前缀一致、56组空目标前缀拒绝。新增三项实际导出/随机模型损失与梯度回归，本地 PyTorch2.8/Transformers4.57.1，远端沿用2.10固定版本检查。详情与未覆盖范围见[本轮证据](review-response-2026-10-18.md)。
+
+已实际核对官方表单，历史记录需本人飞书登录，最终一页Markdown要求本人撰写。未重复新建答卷、未填写个人账户资料、未替本人勾选诚信承诺或声称提交成功。

@@ -19,6 +19,13 @@ node prepared-audit.mjs audit-document.json
 
 默认实际 Qwen 演示 2 样本/268 token/45 目标，工具返回默认 0 目标；final-only 为 24 目标。真实 Teich 对照 23 组 labels 逐 token 一致、7 组空目标双方拒绝、2 个故障门禁。Qwen 原生普通对话/工具模板与项目自定义推理模板的验证范围分开记录。[完整使用、验证及边界](docs/training-preparation.md)。
 
+**2026-10-18：训练长度控制。** 网页和命令行可设置每条序列上限，超长默认拒绝；明确选择右截断时，同步裁剪 labels、attention mask、来源区间与预期目标，并显示移除的 token / 目标。任何一条截断后没有有效目标，整批不导出。默认演示限制为 192 token 后保留 33 个目标、移除 24 token / 12 目标；这可能丢失最终回答，不保证完整消息或工具调用。[本轮实现与实测](docs/review-response-2026-10-18.md)。
+
+```sh
+# 默认拒绝超长；只有明确指定策略才截断
+node prepare.mjs examples/traces/qwen-rendered.json --rendered --max-length 192 --overflow truncate-right --emit jsonl --out training.jsonl
+```
+
 ## 它解决什么问题
 
 | 你遇到的情况 | 工具会告诉你什么 |
