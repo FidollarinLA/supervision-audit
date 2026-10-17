@@ -1,10 +1,30 @@
 # SupervisionAudit
 
-**训练开始前，先看清哪些 token 真正参与了训练。**
+**从对话与工具轨迹准备训练数据，并看清每一个训练目标。**
 
-SupervisionAudit 是用 MoonBit 编写的训练数据审计工具。它读取已经分词的预处理结果，检查标签、Padding、监督范围和文档拼接边界，把问题定位到具体样本与 token。支持纯文本预训练、继续预训练，以及符合相同标签契约的对话微调数据。
+SupervisionAudit 是以 MoonBit 为核心的**训练数据准备与监督验证工作台**。新增原始多轮 messages/tools 校验、模型原生模板适配、推理/回答/工具调用等六类监督策略、MoonBit labels 生成、审计门禁与训练 JSONL 输出。原有预训练/Padding/边界审计、CLI 管道和 v1 接口继续可用。新增能力位于独立 preparation 包，支持 JS/Wasm GC/native，源码版本未另行发布。可选 Teich/HF 层负责原生模板与分词。[初审意见对应说明](docs/review-response-2026-10-13.md)。
 
 > 当前是可运行原型，尚未完成赛事验收或生产数据端到端训练验证。演示语料均为合成文本；已补充固定版本 tokenizer / collator 导出，以及微型随机模型的损失和梯度验证。工具不执行模型训练，也不证明模型效果。
+
+## 新增：训练数据准备
+
+启动后打开 **http://127.0.0.1:4317/prepare.html**：校验原始轨迹 → 选择训练内容 → 生成标签并通过门禁 → 下载训练 JSONL 或一键查看 token 证据。
+
+```sh
+node prepare.mjs examples/traces/qwen-rendered.json --rendered --emit jsonl --out training.jsonl
+node prepare.mjs examples/traces/qwen-rendered.json --rendered --policy examples/traces/final-only.json --out preparation.json
+node prepare.mjs examples/traces/qwen-rendered.json --rendered --emit document --out audit-document.json
+node prepared-audit.mjs audit-document.json
+```
+
+默认实际 Qwen 演示 2 样本/268 token/45 目标，工具返回默认 0 目标；final-only 为 24 目标。真实 Teich 对照 23 组 labels 逐 token 一致、7 组空目标双方拒绝、2 个故障门禁。Qwen 原生普通对话/工具模板与项目自定义推理模板的验证范围分开记录。[完整使用、验证及边界](docs/training-preparation.md)。
+
+**2026-10-18：训练长度控制。** 网页和命令行可设置每条序列上限，超长默认拒绝；明确选择右截断时，同步裁剪 labels、attention mask、来源区间与预期目标，并显示移除的 token / 目标。任何一条截断后没有有效目标，整批不导出。默认演示限制为 192 token 后保留 33 个目标、移除 24 token / 12 目标；这可能丢失最终回答，不保证完整消息或工具调用。[本轮实现与实测](docs/review-response-2026-10-18.md)。
+
+```sh
+# 默认拒绝超长；只有明确指定策略才截断
+node prepare.mjs examples/traces/qwen-rendered.json --rendered --max-length 192 --overflow truncate-right --emit jsonl --out training.jsonl
+```
 
 ## 它解决什么问题
 
@@ -20,7 +40,7 @@ SupervisionAudit 是用 MoonBit 编写的训练数据审计工具。它读取已
 
 ## 三分钟跑起来
 
-先安装 [官方 MoonBit 工具链](https://docs.moonbitlang.com/en/latest/first-steps.html)，并准备 Node.js 22 或更新版本。
+先安装 [官方 MoonBit 工具链](https://docs.moonbitlang.com/en/latest/first-steps.html)（本轮兼容性检查使用 0.1.20261012 / moonc v0.10.15），并准备 Node.js 22 或更新版本。旧版工具链可能不识别新版格式化器输出的 `Int32` 类型名，请先更新工具链。
 
 ```sh
 git clone https://github.com/FidollarinLA/supervision-audit.git

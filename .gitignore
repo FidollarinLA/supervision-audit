@@ -6,3 +6,7 @@ artifacts/
 .DS_Store
 .venv-reference/
 __pycache__/
+
+web/preparation-engine.js
+web/traces/
+.local/

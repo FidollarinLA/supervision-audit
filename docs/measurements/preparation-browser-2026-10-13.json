@@ -1,0 +1,15 @@
+{
+  "schema": "preparation-browser-validation-v1",
+  "browser": "155.0.4283.45",
+  "checks": [
+    "raw normalization completes in real Worker",
+    "training JSONL exactly equals core output; tool responses remain context",
+    "prepared document imports into existing token evidence viewer",
+    "one-click evidence handoff consumes its temporary document",
+    "final-only strategy removes tool-call labels and invalidates prior export",
+    "reasoning strategy works on explicitly authored template",
+    "empty-target and invalid UTF-8 inputs retain no exportable result",
+    "390px layout stays within viewport; edits clear stale evidence"
+  ],
+  "errors": []
+}

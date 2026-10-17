@@ -1,0 +1,27 @@
+{
+  "rows": [
+    {
+      "id": "chat-multiturn",
+      "source": "project-authored-apache-2.0:chat",
+      "messages": [
+        {"role":"system","content":"You are a helpful assistant."},
+        {"role":"user","content":"What is two plus two?"},
+        {"role":"assistant","content":"Four."},
+        {"role":"user","content":"请用中文回答 🌓"},
+        {"role":"assistant","content":"二加二等于四。"}
+      ]
+    },
+    {
+      "id":"agent-tool-round",
+      "source":"project-authored-apache-2.0:tool",
+      "tools":[{"type":"function","function":{"name":"lookup","description":"Read a public item by name.","parameters":{"type":"object","properties":{"name":{"type":"string"}},"required":["name"]}}}],
+      "messages":[
+        {"role":"system","content":"Use the declared lookup tool when needed."},
+        {"role":"user","content":"Look up the MoonBit item."},
+        {"role":"assistant","tool_calls":[{"id":"call-1","type":"function","function":{"name":"lookup","arguments":"{\"name\":\"MoonBit\"}"}}]},
+        {"role":"tool","tool_call_id":"call-1","content":"MoonBit is a programming language."},
+        {"role":"assistant","content":"The item describes MoonBit as a programming language."}
+      ]
+    }
+  ]
+}

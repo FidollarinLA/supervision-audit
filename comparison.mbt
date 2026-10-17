@@ -2,9 +2,9 @@
 pub(all) struct SampleDelta {
   sample_id : String
   change : String
-  before_supervised : Int?
-  after_supervised : Int?
-  supervised_delta : Int?
+  before_supervised : Int32?
+  after_supervised : Int32?
+  supervised_delta : Int32?
 } derive(ToJson)
 
 ///|
@@ -30,7 +30,7 @@ fn finding_key(f : Finding) -> String {
   let key : Json = {
     "code": f.code,
     "sample": f.sample_id,
-    "token": f.token_index.to_json(),
+    "token": Json(f.token_index),
     "severity": f.severity,
   }
   key.stringify()

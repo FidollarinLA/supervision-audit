@@ -1,0 +1,9 @@
+# Optional adapter/reference only. Not a MoonBit or browser dependency.
+teich @ https://github.com/TeichAI/teich/archive/609412fcb5649268b6de3f789fc0d59c4dce0585.zip
+datasets==4.8.3
+transformers==4.57.1
+tokenizers==0.22.1
+numpy==2.3.5
+pandas==3.0.1
+pyarrow==22.0.0
+Jinja2==3.1.6

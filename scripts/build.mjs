@@ -1,9 +1,12 @@
 import { spawnSync } from 'node:child_process';
-import { copyFile, mkdir } from 'node:fs/promises';
+import { copyFile, mkdir, readdir } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { resolve } from 'node:path';
 const result = spawnSync(process.env.MOON || resolve(homedir(), '.moon/bin/moon'), ['build', '--target', 'js', '--release'], { cwd: new URL('../', import.meta.url), stdio: 'inherit' });
 if (result.status !== 0) process.exit(result.status || 1);
 await mkdir(new URL('../web/', import.meta.url), { recursive: true });
 await copyFile(new URL('../_build/js/release/build/supervision_audit.js', import.meta.url), new URL('../web/engine.js', import.meta.url));
-console.log('MoonBit audit engine built.');
+await copyFile(new URL('../_build/js/release/build/preparation/preparation.js', import.meta.url),new URL('../web/preparation-engine.js',import.meta.url));
+await mkdir(new URL('../web/traces/',import.meta.url),{recursive:true});
+for(const name of await readdir(new URL('../examples/traces/',import.meta.url)))if(name.endsWith('.json'))await copyFile(new URL('../examples/traces/'+name,import.meta.url),new URL('../web/traces/'+name,import.meta.url));
+console.log('MoonBit audit and preparation engines built.');

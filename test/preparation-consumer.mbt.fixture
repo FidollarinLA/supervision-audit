@@ -1,0 +1,18 @@
+///|
+test "external preparation consumer uses typed policy and normalization" {
+  let policy : @preparation.TrainingPolicy = @preparation.default_training_policy()
+  assert_true(policy.train_on_tools)
+  assert_false(policy.train_on_tool_responses)
+  let raw =
+    #|{"rows":[{"id":"one","source":"authored","messages":[{"role":"user","content":"hi"},{"role":"assistant","content":"hello"}]}]}
+  assert_true(@json.parse(@preparation.normalize_traces_json(raw)) is Object(fields) && fields.get("ok") is Some(True))
+}
+
+///|
+test "external consumer can use the typed sequence limits and preparation entry" {
+  let limits : @preparation.SequenceLimits = { max_length: 3, overflow: "reject" }
+  let input =
+    #|{"schema":"rendered-traces-utf16-v1","template_family":"chatml-typed-v1","tokenizer_source":"authored","template_source":"authored","rows":[{"id":"one","source":"authored","text":"Uab","input_ids":[1,2,3],"attention_mask":[1,1,1],"offsets":[{"start":0,"end":1},{"start":1,"end":2},{"start":2,"end":3}],"candidates":[{"start":1,"end":3,"source_start":1,"source_end":3,"kind":"final_answer","role":"assistant"}]}]}
+  let result = @json.parse(@preparation.prepare_training_json(input, @preparation.default_training_policy().to_json().stringify(), limits.to_json().stringify()))
+  assert_true(result is Object(fields) && fields.get("ok") is Some(True))
+}

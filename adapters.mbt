@@ -1,12 +1,12 @@
 ///|
 pub(all) struct PreprocessedRow {
   id : String?
-  input_ids : Array[Int]
-  labels : Array[Int]
-  attention_mask : Array[Int]
+  input_ids : Array[Int32]
+  labels : Array[Int32]
+  attention_mask : Array[Int32]
   spans : Array[Span]?
   segments : Array[Segment]?
-  original_supervised_tokens : Int?
+  original_supervised_tokens : Int32?
 } derive(FromJson)
 
 ///|

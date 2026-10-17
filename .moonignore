@@ -14,3 +14,7 @@ PROJECT_PROPOSAL_DRAFT.md
 docs/WORKLOG.md
 docs/proposal-editing-notes.md
 docs/review-*.md
+
+web/preparation-engine.js
+web/traces/
+.local/

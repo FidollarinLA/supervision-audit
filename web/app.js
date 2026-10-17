@@ -86,7 +86,7 @@ function render() {
   const cards = [
     ['审计结果', statusName[report.status], '只针对声明的数据契约'],
     ['检查 token', report.token_count, report.sample_count + ' 条样本'],
-    ['声明监督标签', report.supervised_tokens, `位移后预测目标：${report.prediction_targets ?? '无法计算'}`],
+    ['声明监督标签', report.supervised_tokens, `位移后预测目标：${report.prediction_targets ?? report.effective_target_count ?? '无法计算'}`],
     ['发现的问题', report.error_count + report.warning_count + report.unknown_count, `${report.error_count} 错误 · ${report.warning_count} 提示 · ${report.unknown_count} 待核实`]
   ];
   $('metrics').replaceChildren(...cards.map(([title, value, sub], i) => {
@@ -103,7 +103,7 @@ function render() {
   table.append(heading);
   for (const [index, sample] of report.samples.entries()) {
     const row = element('tr');
-    for (const value of [sample.id, sample.tokens, sample.supervised_tokens, sample.prediction_targets ?? '无法计算', sample.findings.length]) row.append(element('td', '', value));
+    for (const value of [sample.id, sample.tokens, sample.supervised_tokens, sample.prediction_targets ?? sample.effective_target_indices?.length ?? '无法计算', sample.findings.length]) row.append(element('td', '', value));
     const cell = element('td'), button = element('button', 'text-button', '查看 →');
     button.onclick = () => selectSample(index);
     cell.append(button); row.append(cell); table.append(row);
@@ -151,7 +151,7 @@ function renderSample() {
   $('previous-tokens').disabled = tokenStart === 0;
   $('next-tokens').disabled = end >= sample.tokens;
   $('token-page').textContent = sample.tokens ? `#${tokenStart}–${end - 1} / ${sample.tokens} 个 token` : '空样本';
-  $('target-note').textContent = `位移后预测目标：${sample.prediction_targets ?? '无法计算'}。排除首位置标签；含错误目标，需结合审计结果判断。`;
+  $('target-note').textContent = `位移后预测目标：${sample.prediction_targets ?? sample.effective_target_indices?.length ?? '无法计算'}。排除首位置标签；含错误目标，需结合审计结果判断。`;
   $('ratio').textContent = (sample.supervised_ratio * 100).toFixed(1) + '%';
   $('progress').style.width = (sample.supervised_ratio * 100) + '%';
   $('detail').textContent = '点击一个 token，查看标签、角色与来源证据。';
@@ -322,4 +322,6 @@ $('export').onclick = () => {
   const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'supervision-audit-report.json'; anchor.click(); URL.revokeObjectURL(url);
 };
 globalThis.addEventListener?.('pagehide', () => invalidate('页面已离开，计算已取消。请重新运行审计。'));
-await loadPreset();
+if(globalThis.location?.search?.includes('prepared=1')){
+  try{const prepared=sessionStorage.getItem('prepared-audit-document');sessionStorage.removeItem('prepared-audit-document');if(!prepared)throw Error('暂存文档已失效，请从准备页重新打开。');$('format').value='json';$('preset').value='custom';$('input').value=prepared;await run();}catch(error){invalidate(error.message);}
+}else await loadPreset();
