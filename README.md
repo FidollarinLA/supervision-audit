@@ -17,7 +17,7 @@ SupervisionAudit 是以 MoonBit 为核心的**训练数据准备与监督验证�
 
 ## 新增：训练数据准备
 
-启动后打开 **http://127.0.0.1:4317/prepare.html**：校验原始轨迹 → 选择训练内容 → 生成标签并通过门禁 → 下载训练 JSONL 或一键查看 token 证据。
+启动后打开 **http://127.0.0.1:4317/prepare.html**：校验原始轨迹 → 选择训练内容 → 生成标签并通过门禁 → 下载训练 JSONL 或一键查看 token 证据。页面顶部的三步导航可直接跳到对应操作区；手机宽度下仍可切换准备与审计页面。三个下载结果分别用于训练、逐 token 复核和保留完整策略与来源证据。
 
 ```sh
 node prepare.mjs examples/traces/qwen-rendered.json --rendered --emit jsonl --out training.jsonl
