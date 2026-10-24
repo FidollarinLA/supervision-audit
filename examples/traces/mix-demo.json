@@ -1,0 +1,17 @@
+{
+  "schema": "supervision-audit/mix-v1",
+  "output_schema": "rendered-traces-utf16-v1",
+  "seed": 7,
+  "sources": [
+    {
+      "path": "examples/traces/qwen-rendered.json",
+      "take": 1,
+      "id_prefix": "demo-a-"
+    },
+    {
+      "path": "examples/traces/qwen-rendered.json",
+      "take": 1,
+      "id_prefix": "demo-b-"
+    }
+  ]
+}

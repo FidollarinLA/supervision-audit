@@ -1,10 +1,112 @@
 ///|
 /// Token-count limits are applied to fully validated, unshifted labels.
-/// Right truncation retains a prefix; it does not preserve complete turns.
+/// `truncate-right` keeps a token prefix and may cut inside a message.
+/// `truncate-complete-turns` keeps the longest prefix that ends on a
+/// complete answer turn (assistant/text span end), similar in intent to
+/// Teich `oversized_policy="trim_followups"`, without retokenizing.
 pub(all) struct SequenceLimits {
   max_length : Int32
   overflow : String
 } derive(FromJson, ToJson)
+
+///|
+fn overflow_allowed(overflow : String) -> Bool {
+  overflow == "reject" ||
+  overflow == "truncate-right" ||
+  overflow == "truncate-complete-turns"
+}
+
+///|
+fn target_count(labels : Array[Int32], start : Int, end : Int) -> Int {
+  let mut count = 0
+  for i = start; i < end; i = i + 1 {
+    if labels[i] != -100 {
+      count += 1
+    }
+  }
+  count
+}
+
+///|
+/// Prefer the longest prefix ending at an assistant/text span boundary.
+/// User/system/tool-only prefixes are not accepted as complete training turns.
+fn complete_turn_kept(sample : Sample, max_length : Int32) -> Int32? {
+  let n = sample.input_ids.length()
+  if n <= max_length {
+    return Some(n)
+  }
+  let mut kept : Int32 = 0
+  for span in sample.spans {
+    if span.end > max_length {
+      break
+    }
+    // Cut only after a supervised answer/text span itself, not after a
+    // following context span that merely inherits earlier targets.
+    let span_targets = target_count(
+      sample.labels,
+      if span.start > 1 {
+        span.start
+      } else {
+        1
+      },
+      span.end,
+    )
+    if (span.role == "assistant" || span.role == "text") && span_targets > 0 {
+      kept = span.end
+    }
+  }
+  if kept >= 2 {
+    Some(kept)
+  } else {
+    None
+  }
+}
+
+///|
+fn choose_kept(
+  sample : Sample,
+  limits : SequenceLimits,
+) -> Result[Int32, String] {
+  let n = sample.input_ids.length()
+  if n <= limits.max_length {
+    return Ok(n)
+  }
+  match limits.overflow {
+    "reject" =>
+      Err(
+        "Row \{sample.id}: \{n} tokens exceed max_length \{limits.max_length}; select truncate-right or truncate-complete-turns explicitly",
+      )
+    "truncate-right" => Ok(limits.max_length)
+    "truncate-complete-turns" =>
+      match complete_turn_kept(sample, limits.max_length) {
+        Some(kept) => Ok(kept)
+        None =>
+          Err(
+            "Row \{sample.id}: no complete assistant/text turn fits within max_length \{limits.max_length}; refusing mid-turn truncation",
+          )
+      }
+    _ => Err("Unsupported overflow policy")
+  }
+}
+
+///|
+fn boundary_note(overflow : String) -> String {
+  match overflow {
+    "truncate-complete-turns" =>
+      "complete-turn prefix ending on assistant/text span; later follow-up turns may be removed"
+    _ =>
+      "right token prefix; complete messages and tool calls are not guaranteed"
+  }
+}
+
+///|
+fn expectation_suffix(overflow : String, max_length : Int32) -> String {
+  match overflow {
+    "truncate-complete-turns" =>
+      ":complete-turn-max=\{max_length}"
+    _ => ":right-prefix-max=\{max_length}"
+  }
+}
 
 ///|
 /// Prepare a batch atomically, then enforce an explicit sequence-length policy.
@@ -31,9 +133,9 @@ pub fn prepare_training_json(
     let limits : SequenceLimits = @json.from_json(limits_json)
     if limits.max_length < 2 ||
       limits.max_length > 100000 ||
-      (limits.overflow != "reject" && limits.overflow != "truncate-right") {
+      !overflow_allowed(limits.overflow) {
       return error_json(
-        "Sequence max_length must be 2..100000; overflow must be reject or truncate-right",
+        "Sequence max_length must be 2..100000; overflow must be reject, truncate-right or truncate-complete-turns",
       )
     }
     // Validate the complete input before considering any discardable suffix.
@@ -53,22 +155,12 @@ pub fn prepare_training_json(
     let mut truncated_samples = 0
     for sample in original.samples {
       let n = sample.input_ids.length()
-      if n > limits.max_length && limits.overflow == "reject" {
-        return error_json(
-          "Row \{sample.id}: \{n} tokens exceed max_length \{limits.max_length}; select truncate-right explicitly to retain a prefix",
-        )
+      let kept = match choose_kept(sample, limits) {
+        Ok(value) => value
+        Err(message) => return error_json(message)
       }
-      let kept = if n > limits.max_length { limits.max_length } else { n }
-      let mut original_targets = 0
-      let mut kept_targets = 0
-      for i = 1; i < n; i = i + 1 {
-        if sample.labels[i] != -100 {
-          original_targets += 1
-          if i < kept {
-            kept_targets += 1
-          }
-        }
-      }
+      let original_targets = target_count(sample.labels, 1, n)
+      let kept_targets = target_count(sample.labels, 1, kept)
       if kept_targets == 0 {
         return error_json(
           "Row \{sample.id}: sequence prefix has no effective targets after length control; entire batch rejected",
@@ -116,7 +208,7 @@ pub fn prepare_training_json(
         expected_supervision: Some({
           schema: expected.schema,
           source: if kept < n {
-            "\{expected.source}:right-prefix-max=\{limits.max_length}"
+            "\{expected.source}\{expectation_suffix(limits.overflow, limits.max_length)}"
           } else {
             expected.source
           },
@@ -136,6 +228,7 @@ pub fn prepare_training_json(
         "original_targets": original_targets,
         "kept_targets": kept_targets,
         "removed_targets": original_targets - kept_targets,
+        "cut_policy": limits.overflow,
       })
     }
     let doc : Document = {
@@ -153,7 +246,7 @@ pub fn prepare_training_json(
       "removed_tokens": removed_tokens,
       "removed_targets": removed_targets,
       "samples": Json(summaries),
-      "boundary": "right token prefix; complete messages and tool calls are not guaranteed",
+      "boundary": boundary_note(limits.overflow),
     })
     // Coverage continues to describe the released labels, not the full input.
     match fields.get("coverage") {

@@ -1,5 +1,18 @@
 # SupervisionAudit 开发记录
 
+## 2026-10-21
+
+目标：回应初审「独立审计过窄 / 应对标 Teich」，在已有准备链路与长度控制上继续扩大可运行范围，并整理复审报名材料。
+
+完成：
+- MoonBit `truncate-complete-turns`：在完整校验后按带监督目标的 assistant/text span 边界截断，去掉装不下的后续轮；中途切回答则整批拒绝。对标 Teich `trim_followups` 意图，不重分词。
+- `scripts/mix-traces.mjs` 显式条数多源混合；`integrations/transformers/load_prepared_jsonl.py` 校验门禁 JSONL 并接入 Dataset/SFTTrainer 说明。
+- CLI/准备页增加完整轮次选项；更新 README、training-preparation、moon.mod 定位关键词。
+- 复审说明与报名提纲：`docs/review-response-2026-10-21.md`、`PROJECT_PROPOSAL_DRAFT.md`，副本在 `deliverables/`。
+- 产品入口改版：`/` 为工作台总览，审计迁至 `/audit.html`；新增 `npm run demo:reviewer`、`docs/PRODUCT.md`、`docs/trainer-recipe.md`、策略预设清单。
+
+验证：preparation JS 33/33；sequence+mix Node 8/8；load_prepared 默认演示 2 行/45 目标。本机最新 moonc 0.10.16 Windows `\\?\` ICE，逻辑回归借用 0.1.20260920；源码保持 Int32，正式构建以 CI 为准。未推送、未改远端 Description、未代填官方报名表。
+
 ## 2026-10-03
 
 目标：复查申报基础，补明确的预训练定位、可读 README、可视化及持续迭代记录。用户个人资料和表单附件不属于公开代码库。
@@ -177,3 +190,15 @@ README、契约与路线同步，新增 streaming-boundaries.md。明确应用�
 新增 MoonBit SequenceLimits / prepare_training_json：完整校验后执行明确的拒绝或右截断策略，裁剪全部对齐证据并重新门禁。CLI 与可取消 Worker 网页共享核心，显示截断造成的 token/目标损失。原始准备入口与 v1 根包保持兼容。Node 68/68、JS/Wasm GC 核心各57、浏览器9项通过；82组固定 Teich 标签前缀一致、56组空目标前缀拒绝。新增三项实际导出/随机模型损失与梯度回归，本地 PyTorch2.8/Transformers4.57.1，远端沿用2.10固定版本检查。详情与未覆盖范围见[本轮证据](review-response-2026-10-18.md)。
 
 已实际核对官方表单，历史记录需本人飞书登录，最终一页Markdown要求本人撰写。未重复新建答卷、未填写个人账户资料、未替本人勾选诚信承诺或声称提交成功。
+
+## 2026-10-24
+
+目标：初审已过，终审可感知增量——准备页策略预设下拉，并把未推送的工作台面（完整轮次/混合/产品入口/评审演示）落库。
+
+完成：
+- /prepare.html 接入 	races/presets.json 下拉（assistant-all / final-only / tools-and-answers）；手改勾选回落自定义。
+- 同步提交此前本地未推送：	runcate-complete-turns、mix-traces、load_prepared_jsonl、产品 hub、
+pm run demo:reviewer。
+
+验证：见本轮 push 后的 GitHub Actions；本机用 Cursor 内嵌 Node 跑 build 与关键 Node 测试。
+

@@ -2,13 +2,19 @@
 
 **从对话与工具轨迹准备训练数据，并看清每一个训练目标。**
 
-SupervisionAudit 是以 MoonBit 为核心的**训练数据准备与监督验证工作台**。新增原始多轮 messages/tools 校验、模型原生模板适配、推理/回答/工具调用等六类监督策略、MoonBit labels 生成、审计门禁与训练 JSONL 输出。原有预训练/Padding/边界审计、CLI 管道和 v1 接口继续可用。新增能力位于独立 preparation 包，支持 JS/Wasm GC/native，源码版本未另行发布。可选 Teich/HF 层负责原生模板与分词。[初审意见对应说明](docs/review-response-2026-10-13.md)。
+SupervisionAudit 是以 MoonBit 为核心的**训练数据准备与监督验证工作台**。新增原始多轮 messages/tools 校验、模型原生模板适配、推理/回答/工具调用等六类监督策略、MoonBit labels 生成、审计门禁与训练 JSONL 输出。原有预训练/Padding/边界审计、CLI 管道和 v1 接口继续可用。新增能力位于独立 preparation 包，支持 JS/Wasm GC/native，源码版本未另行发布。可选 Teich/HF 层负责原生模板与分词。[初审意见对应](docs/review-response-2026-10-13.md) · [10-18 长度控制](docs/review-response-2026-10-18.md) · [10-21 完整轮次/混合/训练接入](docs/review-response-2026-10-21.md)。
 
 > 当前是可运行原型，尚未完成赛事验收或生产数据端到端训练验证。演示语料均为合成文本；已补充固定版本 tokenizer / collator 导出，以及微型随机模型的损失和梯度验证。工具不执行模型训练，也不证明模型效果。
 
 ## 新增：训练数据准备
 
-启动后打开 **http://127.0.0.1:4317/prepare.html**：校验原始轨迹 → 选择训练内容 → 生成标签并通过门禁 → 下载训练 JSONL 或一键查看 token 证据。
+启动后打开 **http://127.0.0.1:4317/** 产品入口，再进入「训练数据准备」：校验原始轨迹 → 选择训练内容 → 生成标签并通过门禁 → 下载训练 JSONL 或一键查看 token 证据。评审可先跑：
+
+```sh
+npm run demo:reviewer
+```
+
+会生成 `artifacts/reviewer-demo/evidence.json` 与门禁后的 `training.jsonl`。[产品定位](docs/PRODUCT.md) · [Trainer 配方](docs/trainer-recipe.md)
 
 ```sh
 node prepare.mjs examples/traces/qwen-rendered.json --rendered --emit jsonl --out training.jsonl
@@ -21,20 +27,25 @@ node prepared-audit.mjs audit-document.json
 
 **2026-10-18：训练长度控制。** 网页和命令行可设置每条序列上限，超长默认拒绝；明确选择右截断时，同步裁剪 labels、attention mask、来源区间与预期目标，并显示移除的 token / 目标。任何一条截断后没有有效目标，整批不导出。默认演示限制为 192 token 后保留 33 个目标、移除 24 token / 12 目标；这可能丢失最终回答，不保证完整消息或工具调用。[本轮实现与实测](docs/review-response-2026-10-18.md)。
 
+**2026-10-21：完整轮次截断、多源混合与训练接入。** 新增 `truncate-complete-turns`：只保留上限内最后一次完整助手/文本回答轮次，去掉后续轮，对标 Teich `trim_followups` 意图且不重新分词；中途切到回答中间会整批拒绝。`scripts/mix-traces.mjs` 按显式条数混合多份轨迹；`integrations/transformers/load_prepared_jsonl.py` 把已门禁 JSONL 校验为可交给 `SFTTrainer`（`packing=False`）的数据集行。[复审对照](docs/review-response-2026-10-21.md)。
+
 ```sh
-# 默认拒绝超长；只有明确指定策略才截断
+# 默认拒绝超长；右截断保留前缀；完整轮次截断去掉后续轮
 node prepare.mjs examples/traces/qwen-rendered.json --rendered --max-length 192 --overflow truncate-right --emit jsonl --out training.jsonl
+node prepare.mjs examples/traces/qwen-rendered.json --rendered --max-length 180 --overflow truncate-complete-turns --emit jsonl --out turns.jsonl
+node scripts/mix-traces.mjs examples/traces/mix-demo.json --out mixed-rendered.json
+python integrations/transformers/load_prepared_jsonl.py training.jsonl
 ```
 
 ## 它解决什么问题
 
-| 你遇到的情况 | 工具会告诉你什么 |
+| 你遇到的情况 | 工具会做什么 |
 | --- | --- |
-| 预训练时拼接了两份文档 | 后一份文档的首个 token 是否从前一份文档产生预测目标 |
-| 给短样本补齐长度 | Padding 是否被错误地写入训练标签 |
-| 只想训练助手回复 | 用户、系统或工具内容是否误入监督范围 |
-| 改了截断或预处理逻辑 | 声明的监督数量有没有减少、哪些问题新增或消失 |
-| 导出的记录没有来源信息 | 明确显示“需复核”，保留无法验证的部分 |
+| 只有原始多轮对话 / 工具轨迹 | 校验并标准化 messages/tools，经 Teich/HF 模板分词后生成 labels 与训练 JSONL |
+| 只要最终回答、不要推理或工具调用 | 六类监督策略显式开关；改变策略会清除旧输出 |
+| 序列太长，又不能切到半句工具调用 | `truncate-complete-turns` 保留完整回答轮；或显式右截断并报告损失 |
+| 想混合聊天与工具样本再进训练 | 本地 `mix-traces` 按条数合成，再进入同一准备/门禁链路 |
+| 预训练拼接、Padding、collator 回归 | 原有逐 token 审计、修复比较与 Trainer 前向门禁继续可用 |
 
 例如，两份文档拼接后，第二份文档的起始位置是 token #3。若这个位置的 label 仍为 token ID，本工具的边界隔离策略会报告 `PACKING_CROSS_SOURCE_TARGET`。把它改成 `-100` 后重跑，可看到该问题消失。**忽略这一目标不等于阻止后续 token 注意到前一份文档**；需要完整注意力隔离的训练流程仍须在训练器中实现。本工具也不认定所有跨文档预测都天然错误：请确认本契约的策略适合你的训练任务。
 

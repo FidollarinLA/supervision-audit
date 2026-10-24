@@ -17,23 +17,34 @@ node prepare.mjs examples/traces/qwen-rendered.json --rendered --policy examples
 
 默认演示：2 条样本、268 个实际 Qwen token、45 个有效目标，工具返回目标为 0。final-only 策略保留 24 个目标。这些是项目原创的小型对话，不是生产语料或用户收益实验。
 
-运行静态服务器后打开 `/prepare.html`。可以导入原始 JSON 做校验、导入实际分词结果、切换六类策略、导出报告/文档/训练 JSONL；“查看 token 证据”通过同一浏览器标签页临时传递审计文档，审计页读取后删除暂存。没有上传接口。大任务在可取消 Worker 中执行，编辑输入或改变策略清除旧结果。
+运行静态服务器后打开 `/prepare.html`。可以导入原始 JSON 做校验、导入实际分词结果、用策略预设下拉一键套用 `assistant-all` / `final-only` / `tools-and-answers`（或手改六类勾选回落「自定义」）、导出报告/文档/训练 JSONL；“查看 token 证据”通过同一浏览器标签页临时传递审计文档，审计页读取后删除暂存。没有上传接口。大任务在可取消 Worker 中执行，编辑输入或改变策略清除旧结果。
 
-## 训练序列上限（2026-10-18）
+## 训练序列上限（2026-10-18 / 2026-10-21）
 
-新增 `prepare_training_json(rendered, policy, limits)` 和可序列化的 `SequenceLimits`，共享原有完整标签准备和审计核心。`limits` 必须明确提供 `max_length`（2–100000 整数）与 `overflow`（`reject` 或 `truncate-right`），拒绝未知字段。旧 `prepare_labels_json` 入口行为保留。
+新增 `prepare_training_json(rendered, policy, limits)` 和可序列化的 `SequenceLimits`，共享原有完整标签准备和审计核心。`limits` 必须明确提供 `max_length`（2–100000 整数）与 `overflow`（`reject`、`truncate-right` 或 `truncate-complete-turns`），拒绝未知字段。旧 `prepare_labels_json` 入口行为保留。
 
 ```sh
 node prepare.mjs examples/traces/qwen-rendered.json --rendered --max-length 192
 node prepare.mjs examples/traces/qwen-rendered.json --rendered --max-length 192 --overflow truncate-right --out length-report.json
 node prepare.mjs examples/traces/qwen-rendered.json --rendered --max-length 192 --overflow truncate-right --emit jsonl --out training.jsonl
+node prepare.mjs examples/traces/qwen-rendered.json --rendered --max-length 180 --overflow truncate-complete-turns --emit jsonl --out turns.jsonl
 ```
 
-第一条命令因工具轨迹为 216 token 而拒绝。后两条明确选择右截断，保留 192 token 的左侧前缀；另一条 52-token 对话不变。总训练目标由 45 减为 33，移除 24 token / 12 目标。完整准备报告的 `sequence_summary` 提供逐行前后数量，`coverage.effective_targets` 描述最终输出。截断后的审计文档同步裁剪 spans、segments、expectation mask，并重新审计；预期来源标记 `right-prefix-max=192`，不能把删去预期目标当作普通修复。
+第一条命令因工具轨迹为 216 token 而拒绝。右截断保留 192 token 左侧前缀；总训练目标由 45 减为 33，移除 24 token / 12 目标。`truncate-complete-turns` 只在助手/文本 span 边界截断，去掉装不下的后续轮，对标 Teich `oversized_policy="trim_followups"` 的意图；若上限落在回答中间则整批拒绝，不会悄悄改成右截断。完整准备报告的 `sequence_summary` 提供逐行前后数量与 `boundary` 说明。
 
-实现先校验完整输入，包括会被移除的尾部，之后才截断。超长默认拒绝；空目标拒绝整批、不静默丢行，也不会覆盖已有训练文件。右截断可能切在消息或工具调用内部，并可能删去最终回答；没有实现按轮次截断、左截断、自动补 EOS、padding、packing 或重分词。标准训练 JSONL 仅含 id/input_ids/labels/attention_mask，逐行截断清单在完整准备报告中，CLI 另在 stderr 提示损失；需留存策略时请同时保存完整报告。
+实现先校验完整输入，包括会被移除的尾部，之后才截断。超长默认拒绝；空目标拒绝整批、不静默丢行，也不会覆盖已有训练文件。未实现左截断、自动补 EOS、padding、packing 或重分词。标准训练 JSONL 仅含 id/input_ids/labels/attention_mask。
 
-网页同样提供长度与超长处理选项，修改任一项会取消旧任务、使旧下载和 token 证据失效。未填长度时不能只选择右截断。
+网页同样提供长度与超长处理选项，修改任一项会取消旧任务、使旧下载和 token 证据失效。未填长度时不能只选择截断策略。
+
+## 多源混合与训练接入（2026-10-21）
+
+```sh
+node scripts/mix-traces.mjs examples/traces/mix-demo.json --out mixed-rendered.json
+node prepare.mjs mixed-rendered.json --rendered --emit jsonl --out mixed-training.jsonl
+python integrations/transformers/load_prepared_jsonl.py mixed-training.jsonl
+```
+
+`mix-traces` 按显式 `take` 条数合成多份已有轨迹，固定 `seed` 可复现；不下载 Hub、不生成 agent 数据。`load_prepared_jsonl.py` 校验 unshifted 合同后可输出 Hugging Face `Dataset` 信息，供 `SFTTrainer` 在 `packing=False` 下直接使用已门禁 labels，无需再做 response-only masking。
 
 ## 自己的原始数据
 

@@ -1,0 +1,23 @@
+{
+  "schema": "supervision-audit/policy-presets/v1",
+  "presets": [
+    {
+      "id": "assistant-all",
+      "title": "助手全部（默认）",
+      "file": "assistant-all.json",
+      "summary": "训练推理、最终回答与工具调用；忽略用户/系统/工具返回"
+    },
+    {
+      "id": "final-only",
+      "title": "仅最终回答",
+      "file": "final-only.json",
+      "summary": "只训练助手最终回答，排除推理与工具调用"
+    },
+    {
+      "id": "tools-and-answers",
+      "title": "工具调用 + 最终回答",
+      "file": "tools-and-answers.json",
+      "summary": "训练工具调用与最终回答，不训练推理正文"
+    }
+  ]
+}

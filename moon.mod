@@ -8,8 +8,8 @@ readme = "README.md"
 
 repository = "https://github.com/FidollarinLA/supervision-audit"
 
-description = "Deterministic causal-LM supervision auditing with token-level evidence."
+description = "MoonBit training-data preparation and supervision verification workbench with Teich-aligned label checks."
 
-keywords = [ "ai", "sft", "audit", "training-data", "moonbit" ]
+keywords = [ "ai", "sft", "training-data", "preparation", "audit", "teich", "moonbit" ]
 
 preferred_target = "js"

@@ -97,3 +97,30 @@ test('CLI exports the audited prefix and reports loss; rejects ambiguous or malf
   const raw=spawnSync(process.execPath,['prepare.mjs','examples/traces/raw.json','--normalize','--max-length','80'],{cwd:new URL('../',import.meta.url),encoding:'utf8'});
   assert.equal(raw.status,2);
 });
+
+test('complete-turn overflow keeps the last full assistant turn and refuses mid-answer cuts',()=>{
+  const row=structuredClone(sources['qwen-native']);
+  row.rows=row.rows.slice(0,1);
+  const full=JSON.parse(prepare_labels_json(JSON.stringify(row),JSON.stringify(defaults)));
+  assert.equal(full.ok,true,full.error);
+  const assistantEnds=full.document.samples[0].spans.filter(span=>span.role==='assistant').map(span=>span.end);
+  assert.ok(assistantEnds.length>=2);
+  const firstEnd=assistantEnds[0];
+  const secondEnd=assistantEnds[1];
+  const kept=bounded(row,{max_length:secondEnd-1,overflow:'truncate-complete-turns'});
+  assert.equal(kept.ok,true,kept.error);
+  assert.equal(kept.document.samples[0].input_ids.length,firstEnd);
+  assert.match(kept.sequence_summary.boundary,/complete-turn/);
+  assert.match(kept.document.samples[0].expected_supervision.source,/complete-turn-max=/);
+  const mid=bounded(row,{max_length:Math.max(2,firstEnd-1),overflow:'truncate-complete-turns'});
+  assert.equal(mid.ok,false);
+  assert.match(mid.error,/no complete assistant\/text turn/);
+  const temp=mkdtempSync(join(tmpdir(),'complete-turn-'));
+  try {
+    const file=join(temp,'one-row.json');
+    writeFileSync(file,JSON.stringify(row));
+    const cli=spawnSync(process.execPath,['prepare.mjs',file,'--rendered','--max-length',String(secondEnd-1),'--overflow','truncate-complete-turns','--emit','jsonl'],{cwd:new URL('../',import.meta.url),encoding:'utf8'});
+    assert.equal(cli.status,0,cli.stderr);
+    assert.match(cli.stderr,/complete-turn/);
+  } finally {rmSync(temp,{recursive:true,force:true});}
+});

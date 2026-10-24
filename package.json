@@ -11,6 +11,8 @@
     "check:package": "node scripts/check-package.mjs",
     "check:registry": "node scripts/check-registry.mjs",
     "prepare": "node prepare.mjs",
+    "mix": "node scripts/mix-traces.mjs",
+    "demo:reviewer": "node scripts/reviewer-demo.mjs",
     "audit:prepared": "node prepared-audit.mjs",
     "verify:teich": "python integrations/teich/verify.py"
   }

@@ -9,7 +9,7 @@ const defaults = {train_on_reasoning:true, train_on_final_answers:true, train_on
   train_on_user:false, train_on_system:false, train_on_tool_responses:false};
 const args = process.argv.slice(2);
 if (!args.length || args.includes('--help')) {
-  console.log('Usage: node prepare.mjs INPUT [--normalize | --rendered | --tokenizer LOCAL_DIR] [--python PYTHON] [--teich-source SOURCE_DIR] [--policy POLICY.json] [--max-length TOKENS [--overflow reject|truncate-right]] [--emit result|document|jsonl] [--out FILE]\nRaw OpenAI messages are validated by MoonBit; optional Teich/HF adapter renders the native template. Rendered input is offline. Training output is released only when the MoonBit gate passes. Length overflow rejects by default; right truncation is explicit and reports removed tokens/targets.');
+  console.log('Usage: node prepare.mjs INPUT [--normalize | --rendered | --tokenizer LOCAL_DIR] [--python PYTHON] [--teich-source SOURCE_DIR] [--policy POLICY.json] [--max-length TOKENS [--overflow reject|truncate-right|truncate-complete-turns]] [--emit result|document|jsonl] [--out FILE]\nRaw OpenAI messages are validated by MoonBit; optional Teich/HF adapter renders the native template. Rendered input is offline. Training output is released only when the MoonBit gate passes. Length overflow rejects by default; truncate-right keeps a token prefix; truncate-complete-turns keeps the longest prefix ending on a full assistant/text turn (Teich trim_followups-style intent).');
   process.exit(args.includes('--help') ? 0 : 2);
 }
 try {
@@ -30,7 +30,9 @@ try {
   if (opts.has('--max-length')) {
     const value=opts.get('--max-length');
     if (!/^\d+$/.test(value)) throw Error('--max-length requires an integer');
-    limits={max_length:Number(value),overflow:opts.get('--overflow')||'reject'};
+    const overflow=opts.get('--overflow')||'reject';
+    if (!['reject','truncate-right','truncate-complete-turns'].includes(overflow)) throw Error('--overflow must be reject, truncate-right or truncate-complete-turns');
+    limits={max_length:Number(value),overflow};
   }
   if (!opts.has('--tokenizer') && (opts.has('--python') || opts.has('--teich-source'))) throw Error('Renderer options require --tokenizer');
   const input = await readInputFile(args[0]);
@@ -72,6 +74,6 @@ try {
   if (opts.has('--out')) await writeProtectedReport(opts.get('--out'),text,[input,...(policyFile ? [policyFile] : []),...adapterInputs]);
   else process.stdout.write(text);
   if (result.report) console.error(reportSummary(result));
-  if (result.sequence_summary) console.error(`Length control: ${result.sequence_summary.truncated_samples} truncated rows; ${result.sequence_summary.removed_tokens} tokens and ${result.sequence_summary.removed_targets} training targets removed. Right prefixes may end inside a message or tool call.`);
+  if (result.sequence_summary) console.error(`Length control: ${result.sequence_summary.truncated_samples} truncated rows; ${result.sequence_summary.removed_tokens} tokens and ${result.sequence_summary.removed_targets} training targets removed. ${result.sequence_summary.boundary}`);
   process.exitCode = result.report ? result.report.status === 'fail' ? 1 : result.report.status === 'review' ? 3 : 0 : 0;
 } catch (error) {console.error(error.message);process.exitCode = 2;}

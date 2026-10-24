@@ -63,7 +63,7 @@ try {
   const handoff=await browser.newPage();await handoff.goto(address+'/prepare.html');
   await handoff.waitForFunction(()=>document.getElementById('rendered-input').value.includes('chat-multiturn'));
   await handoff.locator('#prepare').click();await handoff.waitForFunction(()=>document.getElementById('inspect-prepared').disabled===false);
-  await handoff.locator('#inspect-prepared').click();await handoff.waitForURL('**/?prepared=1');
+  await handoff.locator('#inspect-prepared').click();await handoff.waitForURL('**/audit.html?prepared=1');
   await handoff.waitForFunction(()=>document.querySelector('#metrics strong')?.textContent==='通过');
   assert.equal(await handoff.locator('#metrics strong').first().textContent(),'通过');
   assert.equal(await handoff.evaluate(()=>sessionStorage.getItem('prepared-audit-document')),null);
