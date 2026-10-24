@@ -55,7 +55,7 @@ try {
   assert.equal(await lengthPage.locator('#prepare-results').isHidden(),true);
   checks.push('sequence overflow rejects by default; explicit prefix export equals core with visible target loss; empty prefix blocks the batch');
   await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:'artifacts/preparation-browser/desktop.png',fullPage:true});
-  const audit=await browser.newPage();await audit.goto(address);
+  const audit=await browser.newPage();await audit.goto(address+'/audit.html');
   await audit.locator('#file').setInputFiles({name:'prepared.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(expected.document))});
   await audit.waitForFunction(()=>document.querySelector('#metrics strong')?.textContent==='通过');
   assert.equal(await audit.locator('#metrics strong').first().textContent(),'通过');

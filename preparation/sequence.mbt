@@ -17,7 +17,7 @@ fn overflow_allowed(overflow : String) -> Bool {
 }
 
 ///|
-fn target_count(labels : Array[Int32], start : Int, end : Int) -> Int {
+fn target_count(labels : Array[Int32], start : Int32, end : Int32) -> Int32 {
   let mut count = 0
   for i = start; i < end; i = i + 1 {
     if labels[i] != -100 {
@@ -102,8 +102,7 @@ fn boundary_note(overflow : String) -> String {
 ///|
 fn expectation_suffix(overflow : String, max_length : Int32) -> String {
   match overflow {
-    "truncate-complete-turns" =>
-      ":complete-turn-max=\{max_length}"
+    "truncate-complete-turns" => ":complete-turn-max=\{max_length}"
     _ => ":right-prefix-max=\{max_length}"
   }
 }

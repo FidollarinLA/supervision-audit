@@ -16,7 +16,7 @@ pub fn compare(Report, Report) -> Comparison
 
 pub fn compare_json(String, String) -> String
 
-pub fn input_limit_utf16() -> Int
+pub fn input_limit_utf16() -> Int32
 
 // Errors
 
@@ -43,19 +43,19 @@ pub(all) struct Finding {
   code : String
   severity : String
   sample_id : String
-  token_index : Int?
+  token_index : Int32?
   message : String
 } derive(ToJson)
 pub fn Finding::to_json(Self) -> Json
 
 pub(all) struct PreprocessedRow {
   id : String?
-  input_ids : Array[Int]
-  labels : Array[Int]
-  attention_mask : Array[Int]
+  input_ids : Array[Int32]
+  labels : Array[Int32]
+  attention_mask : Array[Int32]
   spans : Array[Span]?
   segments : Array[Segment]?
-  original_supervised_tokens : Int?
+  original_supervised_tokens : Int32?
 } derive(@json.FromJson)
 pub fn PreprocessedRow::from_json(Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
 
@@ -63,13 +63,13 @@ pub(all) struct Report {
   schema_version : String
   contract : String
   status : String
-  sample_count : Int
-  token_count : Int
-  supervised_tokens : Int
-  prediction_targets : Int?
-  error_count : Int
-  warning_count : Int
-  unknown_count : Int
+  sample_count : Int32
+  token_count : Int32
+  supervised_tokens : Int32
+  prediction_targets : Int32?
+  error_count : Int32
+  warning_count : Int32
+  unknown_count : Int32
   samples : Array[SampleReport]
   findings : Array[Finding]
 } derive(ToJson)
@@ -77,12 +77,12 @@ pub fn Report::to_json(Self) -> Json
 
 pub(all) struct Sample {
   id : String
-  input_ids : Array[Int]
-  labels : Array[Int]
-  attention_mask : Array[Int]
+  input_ids : Array[Int32]
+  labels : Array[Int32]
+  attention_mask : Array[Int32]
   spans : Array[Span]
   segments : Array[Segment]
-  original_supervised_tokens : Int?
+  original_supervised_tokens : Int32?
 } derive(ToJson, @json.FromJson)
 pub fn Sample::from_json(Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
 pub fn Sample::to_json(Self) -> Json
@@ -90,17 +90,17 @@ pub fn Sample::to_json(Self) -> Json
 pub(all) struct SampleDelta {
   sample_id : String
   change : String
-  before_supervised : Int?
-  after_supervised : Int?
-  supervised_delta : Int?
+  before_supervised : Int32?
+  after_supervised : Int32?
+  supervised_delta : Int32?
 } derive(ToJson)
 pub fn SampleDelta::to_json(Self) -> Json
 
 pub(all) struct SampleReport {
   id : String
-  tokens : Int
-  supervised_tokens : Int
-  prediction_targets : Int?
+  tokens : Int32
+  supervised_tokens : Int32
+  prediction_targets : Int32?
   supervised_ratio : Double
   roles : Array[String]
   states : Array[String]
@@ -110,16 +110,16 @@ pub(all) struct SampleReport {
 pub fn SampleReport::to_json(Self) -> Json
 
 pub(all) struct Segment {
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
   source_id : String
 } derive(ToJson, @json.FromJson)
 pub fn Segment::from_json(Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
 pub fn Segment::to_json(Self) -> Json
 
 pub(all) struct Span {
-  start : Int
-  end : Int
+  start : Int32
+  end : Int32
   role : String
 } derive(ToJson, @json.FromJson)
 pub fn Span::from_json(Json, @json.JsonPath) -> Self raise @json.JsonDecodeError

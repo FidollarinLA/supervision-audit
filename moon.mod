@@ -10,6 +10,14 @@ repository = "https://github.com/FidollarinLA/supervision-audit"
 
 description = "MoonBit training-data preparation and supervision verification workbench with Teich-aligned label checks."
 
-keywords = [ "ai", "sft", "training-data", "preparation", "audit", "teich", "moonbit" ]
+keywords = [
+  "ai",
+  "sft",
+  "training-data",
+  "preparation",
+  "audit",
+  "teich",
+  "moonbit",
+]
 
 preferred_target = "js"
