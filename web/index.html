@@ -68,6 +68,22 @@ npm run dev
       <li>审计是门禁，不是唯一产品面</li>
     </ul>
   </section>
+  <section class="hub-acceptance" aria-labelledby="acceptance-title">
+    <div class="hub-acceptance-head">
+      <span class="section-label">ACCEPTANCE CHECKLIST</span>
+      <h2 id="acceptance-title">评审验收清单</h2>
+      <p>按条目核对可运行证据；不代替官方评分，也不宣称已通过终审。</p>
+    </div>
+    <ol class="hub-checklist">
+      <li><b>产品入口</b> — 打开 <a href="/">/</a> 看到工作台叙事，主 CTA 指向 <a href="prepare.html">prepare.html</a>，审计在 <a href="audit.html">audit.html</a>。</li>
+      <li><b>准备主路径</b> — 默认 Qwen 演示生成 45 目标；策略预设切到 final-only 为 24；可下载 JSONL。</li>
+      <li><b>第二模板族</b> — 准备页「加载 Zephyr 风格演示」接受 <code>zephyr-typed-v1</code>（自写 WordLevel，非 Hub 词表）。</li>
+      <li><b>长度策略</b> — 试用 <code>truncate-complete-turns</code>；超长且无完整回答轮则整批拒绝。</li>
+      <li><b>门禁证据</b> — 准备页「查看 token 证据」进入审计页，或导入已门禁文档。</li>
+      <li><b>离线评审包</b> — <code>npm run demo:reviewer</code> → <code>artifacts/reviewer-demo/evidence.json</code> 与 <code>training.jsonl</code>。</li>
+      <li><b>本人报名</b> — 报名终稿由参赛者独立填写（截止以通知为准）；AI 不代写。</li>
+    </ol>
+  </section>
   <footer><span>SupervisionAudit · 训练数据准备与监督验证工作台</span><span>MoonBit 合同 · Teich 对标 · 本地可复现</span></footer>
 </main>
 </body>

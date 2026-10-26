@@ -44,6 +44,8 @@ test('product hub is the default entry and audit lives under /audit.html', async
     assert.match(hubText, /训练数据准备与监督验证/);
     assert.match(hubText, /prepare\.html/);
     assert.match(hubText, /audit\.html/);
+    assert.match(hubText, /评审验收清单/);
+    assert.match(hubText, /demo:reviewer/);
     assert.doesNotMatch(hubText, /id="run"/);
     const audit = await fetch(base + '/audit.html');
     assert.equal(audit.status, 200);

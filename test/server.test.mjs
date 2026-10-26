@@ -10,6 +10,8 @@ test('local server serves the entry, engine and fixtures without allowing writes
  const hub=await page.text();
  assert.match(hub,/SupervisionAudit/);
  assert.match(hub,/训练数据准备与监督验证|prepare\.html/);
+ assert.match(hub,/评审验收清单/);
+ assert.match(hub,/ACCEPTANCE CHECKLIST/);
  const audit=await fetch(base+'/audit.html');assert.equal(audit.status,200);assert.match(await audit.text(),/id="run"/);
  const prepare=await fetch(base+'/prepare.html');assert.equal(prepare.status,200);
  const prepareText=await prepare.text();

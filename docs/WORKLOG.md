@@ -193,8 +193,12 @@ README、契约与路线同步，新增 streaming-boundaries.md。明确应用�
 
 ## 2026-10-27
 
-目标：冲过审；每 2 小时迭代至当日 14:00。本轮主题：第二模板族可运行演示。
+目标：冲过审；每 2 小时迭代至当日 14:00。
 
+### tick-2 · Hub 验收清单
+PM：评审缺一页可扫的验收路径。架构：清单只挂可运行入口/命令，不宣称终审通过。工程：`/` 增加 ACCEPTANCE CHECKLIST；server/reviewer hub 测试断言。
+
+### tick-1 · 第二模板族
 架构：`template_family` 扩展为 `chatml-typed-v1 | zephyr-typed-v1`（同源标签算法，族名仅作合同来源）；不引入第二套 masking。
 工程：`examples/traces/zephyr-rendered.json`、准备页按钮、`demo:reviewer` 场景、相关测试与文档口径（自写 WordLevel，非 Hub 词表）。
 限制：本机 moonc 0.10.16 Windows `\\?\` ICE，engine JS 临时对齐；正式构建以 CI 为准。

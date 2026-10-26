@@ -17,6 +17,14 @@
 .hub-commands h2{font-size:18px;margin:8px 0 14px}
 .hub-commands pre{margin:0;background:#142a23;color:#e1ebe5;border-radius:10px;padding:16px;font:12px/1.7 ui-monospace,monospace;overflow:auto}
 .hub-commands ul{margin:28px 0 0;padding-left:18px;color:#506348;font-size:13px;line-height:1.9}
+.hub-acceptance{background:#fff;border:1px solid #e1e5da;border-radius:12px;padding:22px 24px;margin-bottom:18px}
+.hub-acceptance-head p{margin:8px 0 0;font-size:13px;line-height:1.7;color:#6f7f6a;max-width:720px}
+.hub-acceptance h2{font-size:18px;margin:8px 0 0}
+.hub-checklist{margin:18px 0 0;padding-left:22px;color:#3f5343;font-size:13px;line-height:1.85}
+.hub-checklist li{margin:0 0 10px}
+.hub-checklist b{color:#2f4f3a}
+.hub-checklist a{color:#2f5d45}
+.hub-checklist code{font-size:12px;background:#eff2e9;padding:1px 5px;border-radius:4px}
 @media(max-width:1100px){
   .hub-flow,.hub-grid,.hub-commands{grid-template-columns:1fr}
   .hub .hub-hero h1{font-size:30px}
