@@ -21,6 +21,8 @@ test('reviewer demo emits gated training jsonl and evidence summary', () => {
   assert.equal(evidence.scenarios.truncate_right_192.effective_targets, 33);
   assert.equal(evidence.scenarios.truncate_complete_turns_180.ok, true);
   assert.equal(evidence.scenarios.mix_demo.rows, 2);
+  assert.equal(evidence.scenarios.zephyr_typed_demo.template_family, 'zephyr-typed-v1');
+  assert.equal(evidence.scenarios.zephyr_typed_demo.effective_targets, 1);
   const trainingPath = join(rootDir, 'artifacts/reviewer-demo/training.jsonl');
   assert.equal(existsSync(trainingPath), true);
   const rows = readFileSync(trainingPath, 'utf8').trim().split('\n').map(JSON.parse);

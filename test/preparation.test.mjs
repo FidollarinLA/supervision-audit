@@ -49,6 +49,13 @@ test('label assembly uses complete token containment, explicit policy and paddin
   assert.equal(prepare(fixture(),{...policy,train_on_reasoning:false,train_on_final_answers:false}).ok,false);
 });
 
+test('zephyr-typed-v1 family is accepted; unknown families still reject',()=>{
+  const zephyr=JSON.parse(readFileSync(new URL('../examples/traces/zephyr-rendered.json',import.meta.url),'utf8'));
+  const ok=prepare(zephyr);assert.equal(ok.ok,true);assert.equal(ok.report.effective_target_count,1);
+  const unknown=structuredClone(zephyr);unknown.template_family='invented-typed-v1';
+  assert.equal(prepare(unknown).ok,false);
+});
+
 test('malformed offsets, missing evidence, duplicate IDs and unsupported candidate kinds reject atomically',()=>{
   for (const edit of [
     d=>d.rows[0].offsets[1].end=10,

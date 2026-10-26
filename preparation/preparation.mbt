@@ -341,6 +341,13 @@ pub fn normalize_traces_json(text : String) -> String {
 }
 
 ///|
+/// Template family is provenance for the rendered contract, not a second
+/// labeling algorithm. Both families share UTF-16 offsets + typed candidates.
+fn supported_template_family(family : String) -> Bool {
+  family == "chatml-typed-v1" || family == "zephyr-typed-v1"
+}
+
+///|
 /// Create labels from independently rendered typed spans and tokenizer offsets.
 /// Fully-contained offsets only. Missing evidence and unsupported kinds reject.
 #export_name("prepare_labels_json")
@@ -352,11 +359,11 @@ pub fn prepare_labels_json(text : String, policy_text : String) -> String {
     let input : PreparationInput = @json.from_json(@json.parse(text))
     let policy : TrainingPolicy = @json.from_json(@json.parse(policy_text))
     if input.schema != "rendered-traces-utf16-v1" ||
-      input.template_family != "chatml-typed-v1" ||
+      !supported_template_family(input.template_family) ||
       input.tokenizer_source.trim().is_empty() ||
       input.template_source.trim().is_empty() {
       return error_json(
-        "Rendered input requires UTF-16 schema and explicit tokenizer/template sources",
+        "Rendered input requires UTF-16 schema, supported template_family (chatml-typed-v1|zephyr-typed-v1), and explicit tokenizer/template sources",
       )
     }
     if input.rows.is_empty() || input.rows.length() > 200 {

@@ -191,6 +191,14 @@ README、契约与路线同步，新增 streaming-boundaries.md。明确应用�
 
 已实际核对官方表单，历史记录需本人飞书登录，最终一页Markdown要求本人撰写。未重复新建答卷、未填写个人账户资料、未替本人勾选诚信承诺或声称提交成功。
 
+## 2026-10-27
+
+目标：冲过审；每 2 小时迭代至当日 14:00。本轮主题：第二模板族可运行演示。
+
+架构：`template_family` 扩展为 `chatml-typed-v1 | zephyr-typed-v1`（同源标签算法，族名仅作合同来源）；不引入第二套 masking。
+工程：`examples/traces/zephyr-rendered.json`、准备页按钮、`demo:reviewer` 场景、相关测试与文档口径（自写 WordLevel，非 Hub 词表）。
+限制：本机 moonc 0.10.16 Windows `\\?\` ICE，engine JS 临时对齐；正式构建以 CI 为准。
+
 ## 2026-10-24
 
 目标：初审已过，终审可感知增量——准备页策略预设下拉，并把未推送的工作台面（完整轮次/混合/产品入口/评审演示）落库。

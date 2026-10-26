@@ -67,7 +67,7 @@ node prepare.mjs examples/traces/raw.json --tokenizer .local/sft-data --emit jso
 
 ## 字符与监督合同
 
-渲染输入：`rendered-traces-utf16-v1`，`template_family: "chatml-typed-v1"`，明确 tokenizer_source/template_source，以及 rows。每行提供 id、source、text、input_ids、attention_mask、offsets、candidates。Python 的 Unicode codepoint 偏移转换为 UTF-16 code units；JS/Wasm/native 都使用同一合同。
+渲染输入：`rendered-traces-utf16-v1`，`template_family` 为 `chatml-typed-v1` 或 `zephyr-typed-v1`（族名只作来源声明，标签算法相同），明确 tokenizer_source/template_source，以及 rows。每行提供 id、source、text、input_ids、attention_mask、offsets、candidates。Python 的 Unicode codepoint 偏移转换为 UTF-16 code units；JS/Wasm/native 都使用同一合同。准备页「Zephyr 风格演示」为项目自写 WordLevel 样例，不冒称 Hub 实装词表。
 
 CandidateSpan 的 start/end 是可训练候选区间，source_start/source_end 是真实字段正文区间，kind 必须是 reasoning、final_answer、tool_call、tool_response、user 或 system，且 role 必须匹配。策略先合并启用候选，再排除关闭类别的正文和声明的 think/tool_call/tool_response 包装。只有完全位于选中字符区间的 token 才获得自身 token ID 标签；跨越范围边界、Padding、零长度偏移和位置 0 设为 -100。未知 kind、非法偏移、冲突角色及空有效目标会拒绝整个请求，不静默丢行。
 

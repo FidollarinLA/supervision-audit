@@ -78,6 +78,12 @@ if (mix.status !== 0) fail('mix-traces failed: ' + mix.stderr);
 const mixed = JSON.parse(mix.stdout);
 if (mixed.rows?.length !== 2) fail('mix-demo should emit 2 rows');
 
+const zephyr = JSON.parse(readFileSync(join(root, 'examples/traces/zephyr-rendered.json'), 'utf8'));
+const zephyrPrep = JSON.parse(prepare_labels_json(JSON.stringify(zephyr), JSON.stringify(assistantAll)));
+if (!zephyrPrep.ok || zephyrPrep.report.status !== 'pass') fail('zephyr-typed demo failed: ' + (zephyrPrep.error || zephyrPrep.report?.status));
+if (targets(zephyrPrep) !== 1) fail(`expected 1 zephyr-demo target, got ${targets(zephyrPrep)}`);
+if (zephyr.template_family !== 'zephyr-typed-v1') fail('zephyr fixture must declare zephyr-typed-v1');
+
 const trainingPath = join(outDir, 'training.jsonl');
 const jsonl = defaultPrep.document.samples
   .map(({id, input_ids, labels, attention_mask}) => JSON.stringify({id, input_ids, labels, attention_mask}))
@@ -113,6 +119,12 @@ const evidence = {
       boundary: turns.sequence_summary?.boundary || null,
     },
     mix_demo: {ok: true, rows: mixed.rows.length, seed: mixed.seed},
+    zephyr_typed_demo: {
+      ok: true,
+      template_family: zephyr.template_family,
+      effective_targets: targets(zephyrPrep),
+      note: 'project-authored WordLevel Zephyr-style fixture; not a Hub tokenizer',
+    },
     reaudit_prepared_document: {ok: true, status: reaudit.report.status},
   },
   artifacts: {
@@ -123,7 +135,7 @@ const evidence = {
   },
   limits: [
     'Does not claim contest acceptance or model quality.',
-    'Demo corpus is project-authored Qwen-rendered traces, not production traffic.',
+    'Demo corpus is project-authored Qwen/Zephyr-style rendered traces, not production traffic.',
     'Teich live API verify remains optional and separate from this offline demo.',
   ],
 };
