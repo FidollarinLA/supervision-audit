@@ -13,6 +13,7 @@
     "prepare": "node prepare.mjs",
     "mix": "node scripts/mix-traces.mjs",
     "demo:reviewer": "node scripts/reviewer-demo.mjs",
+    "facts:registration": "node scripts/registration-facts.mjs",
     "audit:prepared": "node prepared-audit.mjs",
     "verify:teich": "python integrations/teich/verify.py"
   }

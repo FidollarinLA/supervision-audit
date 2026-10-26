@@ -195,6 +195,9 @@ README、契约与路线同步，新增 streaming-boundaries.md。明确应用�
 
 目标：冲过审；每 2 小时迭代至当日 14:00。
 
+### tick-3 · 报名事实卡
+PM：报名截止近，需要可引用事实而非代写终稿。架构：facts 输出与叙事解耦。工程：`npm run facts:registration` → `artifacts/registration-facts/facts.json` + 测试；acceptance/hub 入口更新。
+
 ### tick-2 · Hub 验收清单
 PM：评审缺一页可扫的验收路径。架构：清单只挂可运行入口/命令，不宣称终审通过。工程：`/` 增加 ACCEPTANCE CHECKLIST；server/reviewer hub 测试断言。
 

@@ -14,7 +14,7 @@ SupervisionAudit 是以 MoonBit 为核心的**训练数据准备与监督验证�
 npm run demo:reviewer
 ```
 
-会生成 `artifacts/reviewer-demo/evidence.json` 与门禁后的 `training.jsonl`。[产品定位](docs/PRODUCT.md) · [Trainer 配方](docs/trainer-recipe.md)
+会生成 `artifacts/reviewer-demo/evidence.json` 与门禁后的 `training.jsonl`。报名自查可再跑 `npm run facts:registration`（只输出可核对事实卡，**不是**报名终稿）。[产品定位](docs/PRODUCT.md) · [Trainer 配方](docs/trainer-recipe.md) · [验收记录](docs/acceptance.md)
 
 ```sh
 node prepare.mjs examples/traces/qwen-rendered.json --rendered --emit jsonl --out training.jsonl
