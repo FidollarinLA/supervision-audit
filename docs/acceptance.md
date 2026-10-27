@@ -7,6 +7,7 @@
 | 入口 | 用途 |
 | --- | --- |
 | `/` 评审验收清单 | 5 分钟可视化核对产品面 |
+| [REVIEWER_PACK.md](REVIEWER_PACK.md) | 10 分钟命令/数字/文档收口 |
 | `npm run demo:reviewer` | 离线证据 `artifacts/reviewer-demo/evidence.json` |
 | `npm run facts:registration` | 可引用事实卡 `artifacts/registration-facts/facts.json`（**非报名终稿**） |
 

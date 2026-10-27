@@ -7,7 +7,7 @@ import {mkdirSync, writeFileSync, readFileSync, existsSync} from 'node:fs';
 import {dirname, join, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
-import {prepare_labels_json} from '../web/preparation-engine.js';
+import {prepare_labels_json, prepare_training_json} from '../web/preparation-engine.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = join(root, 'artifacts', 'registration-facts');
@@ -39,13 +39,33 @@ if (!qwenFinal.ok || targets(qwenFinal) !== 24) fail('qwen final-only expected 2
 if (!zephyrAll.ok || targets(zephyrAll) !== 1) fail('zephyr demo expected 1 target');
 if (zephyr.template_family !== 'zephyr-typed-v1') fail('zephyr fixture family mismatch');
 
+const qwenRight = JSON.parse(
+  prepare_training_json(
+    JSON.stringify(qwen),
+    JSON.stringify(assistantAll),
+    JSON.stringify({max_length: 192, overflow: 'truncate-right'}),
+  ),
+);
+const qwenTurns = JSON.parse(
+  prepare_training_json(
+    JSON.stringify(qwen),
+    JSON.stringify(assistantAll),
+    JSON.stringify({max_length: 200, overflow: 'truncate-complete-turns'}),
+  ),
+);
+if (!qwenRight.ok || targets(qwenRight) !== 33) fail('qwen truncate-right 192 expected 33 targets');
+if (!qwenTurns.ok || qwenTurns.report.status !== 'pass') fail('qwen complete-turns 200 should pass');
+
 const hub = readFileSync(join(root, 'web/index.html'), 'utf8');
 const preparePage = readFileSync(join(root, 'web/prepare.html'), 'utf8');
 const checks = {
   hub_is_workbench: /训练数据准备与监督验证/.test(hub) && /评审验收清单/.test(hub),
   prepare_has_presets: /id="policy-preset"/.test(preparePage),
   prepare_has_zephyr_demo: /id="load-zephyr"/.test(preparePage),
+  prepare_has_length_demos:
+    /id="demo-truncate-right"/.test(preparePage) && /id="demo-complete-turns"/.test(preparePage),
   audit_is_separate: existsSync(join(root, 'web/audit.html')),
+  reviewer_pack_doc: existsSync(join(root, 'docs/REVIEWER_PACK.md')),
 };
 
 for (const [name, ok] of Object.entries(checks)) {
@@ -86,13 +106,18 @@ const facts = {
   measurable: {
     qwen_assistant_all_targets: targets(qwenAll),
     qwen_final_only_targets: targets(qwenFinal),
+    qwen_truncate_right_192_targets: targets(qwenRight),
+    qwen_complete_turns_200_status: qwenTurns.report.status,
+    qwen_complete_turns_200_targets: targets(qwenTurns),
     zephyr_typed_demo_targets: targets(zephyrAll),
     zephyr_template_family: zephyr.template_family,
     reviewer_demo_schema: evidence.schema,
     reviewer_demo_scenarios: Object.keys(evidence.scenarios || {}),
   },
   docs_to_cite: [
+    'docs/REVIEWER_PACK.md',
     'docs/PRODUCT.md',
+    'docs/architecture.md',
     'docs/review-response-2026-10-21.md',
     'docs/trainer-recipe.md',
     'docs/acceptance.md',

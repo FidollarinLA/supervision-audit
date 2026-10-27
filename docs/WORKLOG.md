@@ -195,6 +195,9 @@ README、契约与路线同步，新增 streaming-boundaries.md。明确应用�
 
 目标：冲过审；每 2 小时迭代至当日 14:00。
 
+### tick-6 · 评审收口包
+PM：14:00 前最后一刀，需要一页证据地图。架构：REVIEWER_PACK 只列入口/数字，不扩功能。工程：`docs/REVIEWER_PACK.md`；facts 补齐长度策略数字；首页卡片改链收口包。
+
 ### tick-5 · 长度策略一键演示
 PM：评审易漏长度策略。架构：仅 UI 填参+复用现有 prepare 路径，不新增 MoonBit API。工程：准备页「演示右截断 192 / 完整轮次截断(200)」；hub 清单与测试更新。
 

@@ -20,8 +20,13 @@ test('registration facts emit measurable evidence without drafting form prose', 
   assert.equal(facts.schema, 'supervision-audit/registration-facts/v1');
   assert.equal(facts.measurable.qwen_assistant_all_targets, 45);
   assert.equal(facts.measurable.qwen_final_only_targets, 24);
+  assert.equal(facts.measurable.qwen_truncate_right_192_targets, 33);
+  assert.equal(facts.measurable.qwen_complete_turns_200_status, 'pass');
   assert.equal(facts.measurable.zephyr_typed_demo_targets, 1);
   assert.equal(facts.measurable.zephyr_template_family, 'zephyr-typed-v1');
+  assert.equal(facts.surface_checks.prepare_has_length_demos, true);
+  assert.equal(facts.surface_checks.reviewer_pack_doc, true);
+  assert.ok(facts.docs_to_cite.includes('docs/REVIEWER_PACK.md'));
   assert.ok(Array.isArray(facts.contestant_only));
   assert.ok(facts.contestant_only.some((row) => /self-authored|本人|Contest form|form narrative/i.test(row) || /Official form/.test(row)));
   assert.doesNotMatch(JSON.stringify(facts), /我保证已通过终审|官方已录取/);
