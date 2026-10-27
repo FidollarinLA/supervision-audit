@@ -62,10 +62,12 @@ const checks = {
   hub_is_workbench: /训练数据准备与监督验证/.test(hub) && /评审验收清单/.test(hub),
   prepare_has_presets: /id="policy-preset"/.test(preparePage),
   prepare_has_zephyr_demo: /id="load-zephyr"/.test(preparePage),
+  prepare_has_mix_demo: /id="load-mix"/.test(preparePage),
   prepare_has_length_demos:
     /id="demo-truncate-right"/.test(preparePage) && /id="demo-complete-turns"/.test(preparePage),
   audit_is_separate: existsSync(join(root, 'web/audit.html')),
   reviewer_pack_doc: existsSync(join(root, 'docs/REVIEWER_PACK.md')),
+  mixed_rendered_fixture: existsSync(join(root, 'examples/traces/mixed-rendered.json')),
 };
 
 for (const [name, ok] of Object.entries(checks)) {

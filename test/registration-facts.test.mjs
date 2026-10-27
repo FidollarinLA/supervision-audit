@@ -25,6 +25,8 @@ test('registration facts emit measurable evidence without drafting form prose', 
   assert.equal(facts.measurable.zephyr_typed_demo_targets, 1);
   assert.equal(facts.measurable.zephyr_template_family, 'zephyr-typed-v1');
   assert.equal(facts.surface_checks.prepare_has_length_demos, true);
+  assert.equal(facts.surface_checks.prepare_has_mix_demo, true);
+  assert.equal(facts.surface_checks.mixed_rendered_fixture, true);
   assert.equal(facts.surface_checks.reviewer_pack_doc, true);
   assert.ok(facts.docs_to_cite.includes('docs/REVIEWER_PACK.md'));
   assert.ok(Array.isArray(facts.contestant_only));

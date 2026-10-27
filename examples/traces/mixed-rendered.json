@@ -1,0 +1,744 @@
+{
+  "schema": "rendered-traces-utf16-v1",
+  "seed": 7,
+  "rows": [
+    {
+      "id": "demo-b-chat-multiturn",
+      "source": "project-authored-apache-2.0:chat",
+      "text": "<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n<|im_start|>user\nWhat is two plus two?<|im_end|>\n<|im_start|>assistant\nFour.<|im_end|>\n<|im_start|>user\n请用中文回答 🌓<|im_end|>\n<|im_start|>assistant\n二加二等于四。<|im_end|>\n",
+      "input_ids": [
+        151644,
+        8948,
+        198,
+        2610,
+        525,
+        264,
+        10950,
+        17847,
+        13,
+        151645,
+        198,
+        151644,
+        872,
+        198,
+        3838,
+        374,
+        1378,
+        5519,
+        1378,
+        30,
+        151645,
+        198,
+        151644,
+        77091,
+        198,
+        26972,
+        13,
+        151645,
+        198,
+        151644,
+        872,
+        198,
+        14880,
+        11622,
+        104811,
+        102104,
+        11162,
+        234,
+        241,
+        151645,
+        198,
+        151644,
+        77091,
+        198,
+        40820,
+        20929,
+        40820,
+        107106,
+        63703,
+        1773,
+        151645,
+        198
+      ],
+      "attention_mask": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "offsets": [
+        {
+          "start": 0,
+          "end": 12
+        },
+        {
+          "start": 12,
+          "end": 18
+        },
+        {
+          "start": 18,
+          "end": 19
+        },
+        {
+          "start": 19,
+          "end": 22
+        },
+        {
+          "start": 22,
+          "end": 26
+        },
+        {
+          "start": 26,
+          "end": 28
+        },
+        {
+          "start": 28,
+          "end": 36
+        },
+        {
+          "start": 36,
+          "end": 46
+        },
+        {
+          "start": 46,
+          "end": 47
+        },
+        {
+          "start": 47,
+          "end": 57
+        },
+        {
+          "start": 57,
+          "end": 58
+        },
+        {
+          "start": 58,
+          "end": 70
+        },
+        {
+          "start": 70,
+          "end": 74
+        },
+        {
+          "start": 74,
+          "end": 75
+        },
+        {
+          "start": 75,
+          "end": 79
+        },
+        {
+          "start": 79,
+          "end": 82
+        },
+        {
+          "start": 82,
+          "end": 86
+        },
+        {
+          "start": 86,
+          "end": 91
+        },
+        {
+          "start": 91,
+          "end": 95
+        },
+        {
+          "start": 95,
+          "end": 96
+        },
+        {
+          "start": 96,
+          "end": 106
+        },
+        {
+          "start": 106,
+          "end": 107
+        },
+        {
+          "start": 107,
+          "end": 119
+        },
+        {
+          "start": 119,
+          "end": 128
+        },
+        {
+          "start": 128,
+          "end": 129
+        },
+        {
+          "start": 129,
+          "end": 133
+        },
+        {
+          "start": 133,
+          "end": 134
+        },
+        {
+          "start": 134,
+          "end": 144
+        },
+        {
+          "start": 144,
+          "end": 145
+        },
+        {
+          "start": 145,
+          "end": 157
+        },
+        {
+          "start": 157,
+          "end": 161
+        },
+        {
+          "start": 161,
+          "end": 162
+        },
+        {
+          "start": 162,
+          "end": 163
+        },
+        {
+          "start": 163,
+          "end": 164
+        },
+        {
+          "start": 164,
+          "end": 166
+        },
+        {
+          "start": 166,
+          "end": 168
+        },
+        {
+          "start": 168,
+          "end": 171
+        },
+        {
+          "start": 169,
+          "end": 171
+        },
+        {
+          "start": 169,
+          "end": 171
+        },
+        {
+          "start": 171,
+          "end": 181
+        },
+        {
+          "start": 181,
+          "end": 182
+        },
+        {
+          "start": 182,
+          "end": 194
+        },
+        {
+          "start": 194,
+          "end": 203
+        },
+        {
+          "start": 203,
+          "end": 204
+        },
+        {
+          "start": 204,
+          "end": 205
+        },
+        {
+          "start": 205,
+          "end": 206
+        },
+        {
+          "start": 206,
+          "end": 207
+        },
+        {
+          "start": 207,
+          "end": 209
+        },
+        {
+          "start": 209,
+          "end": 210
+        },
+        {
+          "start": 210,
+          "end": 211
+        },
+        {
+          "start": 211,
+          "end": 221
+        },
+        {
+          "start": 221,
+          "end": 222
+        }
+      ],
+      "candidates": [
+        {
+          "start": 19,
+          "end": 47,
+          "source_start": 19,
+          "source_end": 47,
+          "kind": "system",
+          "role": "system"
+        },
+        {
+          "start": 75,
+          "end": 96,
+          "source_start": 75,
+          "source_end": 96,
+          "kind": "user",
+          "role": "user"
+        },
+        {
+          "start": 129,
+          "end": 145,
+          "source_start": 129,
+          "source_end": 134,
+          "kind": "final_answer",
+          "role": "assistant"
+        },
+        {
+          "start": 162,
+          "end": 171,
+          "source_start": 162,
+          "source_end": 171,
+          "kind": "user",
+          "role": "user"
+        },
+        {
+          "start": 204,
+          "end": 222,
+          "source_start": 204,
+          "source_end": 211,
+          "kind": "final_answer",
+          "role": "assistant"
+        }
+      ]
+    },
+    {
+      "id": "demo-a-chat-multiturn",
+      "source": "project-authored-apache-2.0:chat",
+      "text": "<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n<|im_start|>user\nWhat is two plus two?<|im_end|>\n<|im_start|>assistant\nFour.<|im_end|>\n<|im_start|>user\n请用中文回答 🌓<|im_end|>\n<|im_start|>assistant\n二加二等于四。<|im_end|>\n",
+      "input_ids": [
+        151644,
+        8948,
+        198,
+        2610,
+        525,
+        264,
+        10950,
+        17847,
+        13,
+        151645,
+        198,
+        151644,
+        872,
+        198,
+        3838,
+        374,
+        1378,
+        5519,
+        1378,
+        30,
+        151645,
+        198,
+        151644,
+        77091,
+        198,
+        26972,
+        13,
+        151645,
+        198,
+        151644,
+        872,
+        198,
+        14880,
+        11622,
+        104811,
+        102104,
+        11162,
+        234,
+        241,
+        151645,
+        198,
+        151644,
+        77091,
+        198,
+        40820,
+        20929,
+        40820,
+        107106,
+        63703,
+        1773,
+        151645,
+        198
+      ],
+      "attention_mask": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "offsets": [
+        {
+          "start": 0,
+          "end": 12
+        },
+        {
+          "start": 12,
+          "end": 18
+        },
+        {
+          "start": 18,
+          "end": 19
+        },
+        {
+          "start": 19,
+          "end": 22
+        },
+        {
+          "start": 22,
+          "end": 26
+        },
+        {
+          "start": 26,
+          "end": 28
+        },
+        {
+          "start": 28,
+          "end": 36
+        },
+        {
+          "start": 36,
+          "end": 46
+        },
+        {
+          "start": 46,
+          "end": 47
+        },
+        {
+          "start": 47,
+          "end": 57
+        },
+        {
+          "start": 57,
+          "end": 58
+        },
+        {
+          "start": 58,
+          "end": 70
+        },
+        {
+          "start": 70,
+          "end": 74
+        },
+        {
+          "start": 74,
+          "end": 75
+        },
+        {
+          "start": 75,
+          "end": 79
+        },
+        {
+          "start": 79,
+          "end": 82
+        },
+        {
+          "start": 82,
+          "end": 86
+        },
+        {
+          "start": 86,
+          "end": 91
+        },
+        {
+          "start": 91,
+          "end": 95
+        },
+        {
+          "start": 95,
+          "end": 96
+        },
+        {
+          "start": 96,
+          "end": 106
+        },
+        {
+          "start": 106,
+          "end": 107
+        },
+        {
+          "start": 107,
+          "end": 119
+        },
+        {
+          "start": 119,
+          "end": 128
+        },
+        {
+          "start": 128,
+          "end": 129
+        },
+        {
+          "start": 129,
+          "end": 133
+        },
+        {
+          "start": 133,
+          "end": 134
+        },
+        {
+          "start": 134,
+          "end": 144
+        },
+        {
+          "start": 144,
+          "end": 145
+        },
+        {
+          "start": 145,
+          "end": 157
+        },
+        {
+          "start": 157,
+          "end": 161
+        },
+        {
+          "start": 161,
+          "end": 162
+        },
+        {
+          "start": 162,
+          "end": 163
+        },
+        {
+          "start": 163,
+          "end": 164
+        },
+        {
+          "start": 164,
+          "end": 166
+        },
+        {
+          "start": 166,
+          "end": 168
+        },
+        {
+          "start": 168,
+          "end": 171
+        },
+        {
+          "start": 169,
+          "end": 171
+        },
+        {
+          "start": 169,
+          "end": 171
+        },
+        {
+          "start": 171,
+          "end": 181
+        },
+        {
+          "start": 181,
+          "end": 182
+        },
+        {
+          "start": 182,
+          "end": 194
+        },
+        {
+          "start": 194,
+          "end": 203
+        },
+        {
+          "start": 203,
+          "end": 204
+        },
+        {
+          "start": 204,
+          "end": 205
+        },
+        {
+          "start": 205,
+          "end": 206
+        },
+        {
+          "start": 206,
+          "end": 207
+        },
+        {
+          "start": 207,
+          "end": 209
+        },
+        {
+          "start": 209,
+          "end": 210
+        },
+        {
+          "start": 210,
+          "end": 211
+        },
+        {
+          "start": 211,
+          "end": 221
+        },
+        {
+          "start": 221,
+          "end": 222
+        }
+      ],
+      "candidates": [
+        {
+          "start": 19,
+          "end": 47,
+          "source_start": 19,
+          "source_end": 47,
+          "kind": "system",
+          "role": "system"
+        },
+        {
+          "start": 75,
+          "end": 96,
+          "source_start": 75,
+          "source_end": 96,
+          "kind": "user",
+          "role": "user"
+        },
+        {
+          "start": 129,
+          "end": 145,
+          "source_start": 129,
+          "source_end": 134,
+          "kind": "final_answer",
+          "role": "assistant"
+        },
+        {
+          "start": 162,
+          "end": 171,
+          "source_start": 162,
+          "source_end": 171,
+          "kind": "user",
+          "role": "user"
+        },
+        {
+          "start": 204,
+          "end": 222,
+          "source_start": 204,
+          "source_end": 211,
+          "kind": "final_answer",
+          "role": "assistant"
+        }
+      ]
+    }
+  ],
+  "mix": {
+    "source_count": 2,
+    "row_count": 2,
+    "note": "Deterministic local mix; ratios are explicit take counts, not Hub sampling."
+  },
+  "template_family": "chatml-typed-v1",
+  "tokenizer_source": "local-tokenizer-sha256:c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+  "template_source": "local-chat-template-sha256:cd8e9439f0570856fd70470bf8889ebd8b5d1107207f67a5efb46e342330527f"
+}
