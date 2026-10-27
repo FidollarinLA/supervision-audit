@@ -57,6 +57,8 @@ test('product hub is the default entry and audit lives under /audit.html', async
     const prepareText = await prepare.text();
     assert.match(prepareText, /训练数据准备/);
     assert.match(prepareText, /id="policy-preset"/);
+    assert.match(prepareText, /id="demo-truncate-right"/);
+    assert.match(prepareText, /id="demo-complete-turns"/);
     const presets = await fetch(base + '/traces/presets.json');
     assert.equal(presets.status, 200);
     assert.equal((await presets.json()).schema, 'supervision-audit/policy-presets/v1');

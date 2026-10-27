@@ -61,5 +61,15 @@ $('export-training').onclick=()=>{if(result?.report.status==='pass')download('tr
 $('inspect-prepared').onclick=()=>{if(result?.report.status==='pass')try{sessionStorage.setItem('prepared-audit-document',JSON.stringify(result.document));location.href='audit.html?prepared=1';}catch(error){$('prepare-status').textContent='浏览器无法暂存文档，请下载审计文档后在审计页导入。';}};
 async function demo(kind='qwen'){invalidate();const ticket=revision;try{const paths=kind==='reasoning'?['traces/reasoning-rendered.json']:kind==='zephyr'?['traces/zephyr-rendered.json']:['traces/raw.json','traces/qwen-rendered.json'];const values=await Promise.all(paths.map(async path=>{const response=await fetch(path);if(!response.ok)throw Error('演示文件加载失败');return response.json();}));if(ticket!==revision)return;if(kind==='qwen')$('raw-input').value=JSON.stringify(values[0],null,2);$('rendered-input').value=JSON.stringify(values.at(-1),null,2);invalidate();$('prepare-status').textContent=kind==='reasoning'?'已加载自定义模板的推理策略演示。':kind==='zephyr'?'已加载 Zephyr 风格第二模板族演示（项目自写 WordLevel，非 Hub 词表）。':'已加载 Qwen 原生模板的真实分词演示。';}catch(error){if(ticket===revision)$('prepare-status').textContent=error.message;}}
 $('load-demo').onclick=()=>demo('qwen');$('load-reasoning').onclick=()=>demo('reasoning');$('load-zephyr').onclick=()=>demo('zephyr');
+async function lengthDemo(mode){
+  if(!$('rendered-input').value.trim()){$('prepare-status').textContent='请先加载分词结果（如完整演示）。';return;}
+  if(mode==='right'){$('max-length').value='192';$('overflow').value='truncate-right';}
+  else{$('max-length').value='200';$('overflow').value='truncate-complete-turns';}
+  invalidate();
+  $('prepare-status').textContent=mode==='right'?'已套用右截断 192，正在生成…':'已套用完整轮次截断 max=200，正在生成…';
+  await run('prepare');
+}
+$('demo-truncate-right').onclick=()=>lengthDemo('right');
+$('demo-complete-turns').onclick=()=>lengthDemo('turns');
 try{await loadPresets();}catch(error){$('prepare-status').textContent=error.message;}
 await demo();
