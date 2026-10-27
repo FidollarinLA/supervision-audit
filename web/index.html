@@ -45,10 +45,10 @@
       <h2>监督审计与比较</h2>
       <p>检查 Padding、拼接边界、角色泄漏；对比修复前后；查看 token 证据。</p>
     </a>
-    <a class="hub-card" href="https://github.com/FidollarinLA/supervision-audit/blob/main/docs/review-response-2026-10-21.md" target="_blank" rel="noopener">
-      <span class="section-label">REVIEW</span>
-      <h2>过审定位说明</h2>
-      <p>与 Teich 的职责对照、四个可运行场景、复审证据入口。</p>
+    <a class="hub-card" href="https://github.com/FidollarinLA/supervision-audit/blob/main/docs/architecture.md" target="_blank" rel="noopener">
+      <span class="section-label">ARCHITECTURE</span>
+      <h2>工作台分层</h2>
+      <p>准备 → 标签 → 长度 → 门禁；MoonBit 判定 / JS 仅 I/O。含过审可核对边界。</p>
     </a>
   </section>
   <section class="hub-commands">
@@ -75,7 +75,7 @@ npm run dev
       <p>按条目核对可运行证据；不代替官方评分，也不宣称已通过终审。</p>
     </div>
     <ol class="hub-checklist">
-      <li><b>产品入口</b> — 打开 <a href="/">/</a> 看到工作台叙事，主 CTA 指向 <a href="prepare.html">prepare.html</a>，审计在 <a href="audit.html">audit.html</a>。</li>
+      <li><b>产品入口</b> — 打开 <a href="/">/</a> 看到工作台叙事与<a href="https://github.com/FidollarinLA/supervision-audit/blob/main/docs/architecture.md" target="_blank" rel="noopener">分层架构</a>，主 CTA 指向 <a href="prepare.html">prepare.html</a>，审计在 <a href="audit.html">audit.html</a>。</li>
       <li><b>准备主路径</b> — 默认 Qwen 演示生成 45 目标；策略预设切到 final-only 为 24；可下载 JSONL。</li>
       <li><b>第二模板族</b> — 准备页「加载 Zephyr 风格演示」接受 <code>zephyr-typed-v1</code>（自写 WordLevel，非 Hub 词表）。</li>
       <li><b>长度策略</b> — 试用 <code>truncate-complete-turns</code>；超长且无完整回答轮则整批拒绝。</li>

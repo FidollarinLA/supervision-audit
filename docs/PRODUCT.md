@@ -38,3 +38,5 @@
 ## 本阶段不做
 
 Agent 执行、多模态、全模板覆盖、正式宣称生产收益、用 AI 稿冒充本人报名终稿。
+
+分层与包边界见 [architecture.md](architecture.md)。

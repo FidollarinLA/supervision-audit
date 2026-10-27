@@ -195,6 +195,9 @@ README、契约与路线同步，新增 streaming-boundaries.md。明确应用�
 
 目标：冲过审；每 2 小时迭代至当日 14:00。
 
+### tick-4 · 架构叙事对齐
+PM：过审材料里架构图仍像「纯审计」。架构：重画准备工作台数据流与包边界表。工程：重写 `docs/architecture.md`；首页卡片改链架构文；hub 测试断言。
+
 ### tick-3 · 报名事实卡
 PM：报名截止近，需要可引用事实而非代写终稿。架构：facts 输出与叙事解耦。工程：`npm run facts:registration` → `artifacts/registration-facts/facts.json` + 测试；acceptance/hub 入口更新。
 
