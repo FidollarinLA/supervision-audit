@@ -25,7 +25,7 @@
 1. 打开 `http://127.0.0.1:4317/` 产品入口（不是审计页）
 2. 进入「训练数据准备」
 3. 运行默认 Qwen 演示 → 45 目标 → 下载 JSONL
-4. 切换策略预设 final-only → 24 目标；可选「Zephyr 风格演示」验证第二模板族
+4. 切换策略预设 final-only → 24 目标，或点「对比预设目标数」一次看清差异；可选「Zephyr 风格演示」验证第二模板族
 5. 一键进入审计门禁查看 token 证据
 6. CLI：`npm run demo:reviewer` 产出 `artifacts/reviewer-demo/evidence.json`（含 zephyr_typed_demo）
 

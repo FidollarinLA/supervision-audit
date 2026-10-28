@@ -16,6 +16,7 @@
 | --- | --- |
 | Qwen + assistant-all | 45 训练目标 |
 | Qwen + final-only | 24 训练目标 |
+| 准备页「对比预设目标数」 | Qwen：45 / 24 / 45；推理演示：199 / 78 / 155 |
 | 右截断 max=192 | 33 目标（演示夹具） |
 | 完整轮次 max=200 | 通过门禁（默认 Qwen 夹具） |
 | Zephyr 风格演示 | `zephyr-typed-v1`，1 目标（自写 WordLevel） |

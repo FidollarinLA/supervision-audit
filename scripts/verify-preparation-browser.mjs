@@ -27,6 +27,12 @@ try {
   assert.equal(await metricStrong(page,'训练目标'),'45');
   assert.equal(await page.locator('#prepared-samples tr').count(),2);
   assert.deepEqual(await page.locator('#prepared-samples tr td:nth-child(4)').allTextContents(),['0','0']);
+  await page.locator('#compare-presets').click();
+  await page.waitForFunction(()=>!document.getElementById('policy-compare').hidden);
+  assert.match(await page.locator('#prepare-status').textContent(),/assistant-all=45/);
+  assert.match(await page.locator('#prepare-status').textContent(),/final-only=24/);
+  assert.equal(await page.locator('#export-training').isEnabled(),true);
+  checks.push('preset compare summarizes target counts without clearing prior export');
   const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#export-training').click()]);
   const training=await readFile(await download.path(),'utf8');
   const rendered=JSON.parse(await readFile('examples/traces/qwen-rendered.json','utf8'));

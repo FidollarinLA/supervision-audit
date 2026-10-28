@@ -56,6 +56,7 @@ sequenceDiagram
 - **浏览器：** 每次任务独立 Worker；取消或输入变化终止旧任务，防止过期结果覆盖。
 - **CLI：** 同进程直接调用编译后的 JS 引擎；退出码区分 pass / fail / review。
 - **CI：** Linux 上 `moon build` 生成引擎；Windows 本机可能遇 moonc 路径 ICE，以 Actions 为准。
+- **策略预设对比：** 准备页对清单内每个预设依次调用同一 `prepare` 接口（不同 `policy`，同一 rendered 文本与长度设置）。只做展示摘要，不引入第二套 masking，也不改当前勾选或已有导出。
 
 ## 4. 合同清单
 
@@ -87,7 +88,7 @@ sequenceDiagram
 
 ## 6. 已实现 vs 明确未做
 
-**已实现：** `/` → `/prepare.html` → `/audit.html`；策略预设；Zephyr 族演示；mix 冻结演示；长度一键演示；`demo:reviewer` / `facts:registration`；Teich 固定提交对照；三后端测试。
+**已实现：** `/` → `/prepare.html` → `/audit.html`；策略预设与预设目标数对比；Zephyr 族演示；mix 冻结演示；长度一键演示；`demo:reviewer` / `facts:registration`；Teich 固定提交对照；三后端测试。
 
 **未做：** 生产 tokenizer 全覆盖、超大 JSONL 流式、外部真实试用记录、宣称模型效果、代写报名终稿。
 

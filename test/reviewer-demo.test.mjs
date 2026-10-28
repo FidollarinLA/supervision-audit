@@ -62,6 +62,8 @@ test('product hub is the default entry and audit lives under /audit.html', async
     assert.match(prepareText, /id="demo-complete-turns"/);
     assert.match(prepareText, /id="load-mix"/);
     assert.match(prepareText, /id="prepare-next"/);
+    assert.match(prepareText, /id="compare-presets"/);
+    assert.match(prepareText, /id="policy-compare"/);
     const mixed = await fetch(base + '/traces/mixed-rendered.json');
     assert.equal(mixed.status, 200);
     assert.equal((await mixed.json()).rows.length, 2);

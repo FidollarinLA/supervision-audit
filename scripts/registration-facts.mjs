@@ -70,6 +70,8 @@ const checks = {
   architecture_runtime_doc: /运行时双路径/.test(readFileSync(join(root, 'docs/architecture.md'), 'utf8')),
   mixed_rendered_fixture: existsSync(join(root, 'examples/traces/mixed-rendered.json')),
   prepare_has_next_strip: /id="prepare-next"/.test(preparePage),
+  prepare_has_policy_compare: /id="compare-presets"/.test(preparePage) && /id="policy-compare"/.test(preparePage),
+  architecture_policy_compare_doc: /策略预设对比/.test(readFileSync(join(root, 'docs/architecture.md'), 'utf8')),
 };
 
 for (const [name, ok] of Object.entries(checks)) {

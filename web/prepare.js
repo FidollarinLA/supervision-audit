@@ -5,7 +5,7 @@ const runner=new AuditRunner();
 let revision=0,normalized=null,normalizedText='',result=null,presetCatalog=[],applyingPreset=false;
 function invalidate(){revision++;runner.cancel();if($('raw-input').value!==normalizedText)normalized=null;result=null;$('cancel-prepare').hidden=true;$('export-normalized').disabled=!normalized;
   for(const id of ['export-training','export-document','export-preparation','inspect-prepared'])$(id).disabled=true;
-  $('prepare-results').hidden=true;$('prepare-next').hidden=true;$('prepare-next').replaceChildren();$('prepare-metrics').replaceChildren();$('raw-status').textContent='输入或策略已变化，请重新运行。';$('prepare-status').textContent='';}
+  $('prepare-results').hidden=true;$('prepare-next').hidden=true;$('prepare-next').replaceChildren();$('prepare-metrics').replaceChildren();$('policy-compare').hidden=true;$('policy-compare').replaceChildren();$('raw-status').textContent='输入或策略已变化，请重新运行。';$('prepare-status').textContent='';}
 function markCustomPolicy(){if(applyingPreset)return;if($('policy-preset').value){$('policy-preset').value='';$('policy-preset-summary').textContent='已改为自定义勾选；请重新生成标签。';}invalidate();}
 function applyPolicy(policy){for(const key of keys)$(key).checked=Boolean(policy[key]);}
 async function loadPresets(){
@@ -89,5 +89,45 @@ async function lengthDemo(mode){
 }
 $('demo-truncate-right').onclick=()=>lengthDemo('right');
 $('demo-complete-turns').onclick=()=>lengthDemo('turns');
+async function comparePresets(){
+  const text=$('rendered-input').value;
+  if(!text.trim()){$('prepare-status').textContent='请先加载分词结果，再对比策略预设。';return;}
+  if(!presetCatalog.length){$('prepare-status').textContent='策略预设清单尚未加载。';return;}
+  const length=$('max-length').value;
+  if(length!=='' && !/^\d+$/.test(length)){$('prepare-status').textContent='序列长度必须是整数。';return;}
+  const limits=length!==''?{max_length:Number(length),overflow:$('overflow').value}:undefined;
+  if(!limits && $('overflow').value!=='reject'){$('prepare-status').textContent='选择截断策略前，请填写每条最多 token。';return;}
+  const ticket=++revision;runner.cancel();$('cancel-prepare').hidden=false;
+  const panel=$('policy-compare');panel.hidden=true;panel.replaceChildren();
+  $('prepare-status').textContent='正在对比策略预设（同一引擎多次调用）…';
+  try{
+    const rows=[];
+    for(const preset of presetCatalog){
+      if(ticket!==revision)return;
+      const response=await fetch('traces/'+preset.file);
+      if(!response.ok)throw Error('无法加载预设 '+preset.file);
+      const policy=await response.json();
+      const {result:output}=await runner.run({op:'prepare',text,policy,limits});
+      if(ticket!==revision)return;
+      const r=output.report;
+      rows.push({title:preset.title,id:preset.id,status:r.status,targets:r.effective_target_count,tokens:r.token_count,samples:r.sample_count});
+    }
+    if(ticket!==revision)return;
+    const title=el('p','');title.className='policy-compare-title';title.textContent='策略预设对比（同输入 · 同长度 · 同源标签算法）';
+    const table=document.createElement('table');
+    const thead=document.createElement('thead');const hr=el('tr','');hr.append(...['预设','门禁','样本','实际 token','训练目标'].map(v=>el('th',v)));thead.append(hr);
+    const tbody=document.createElement('tbody');
+    for(const row of rows){
+      const tr=el('tr','');
+      const target=el('td','');target.append(el('strong',row.targets));
+      tr.append(el('td',row.title),el('td',row.status==='pass'?'通过':'需检查'),el('td',row.samples),el('td',row.tokens),target);
+      tbody.append(tr);
+    }
+    table.append(thead,tbody);panel.replaceChildren(title,table);panel.hidden=false;
+    $('prepare-status').textContent=`已对比 ${rows.length} 个预设：`+rows.map(row=>`${row.id}=${row.targets}`).join('，')+'。未改当前勾选，也未覆盖已有导出。';
+  }catch(error){if(ticket===revision && error.name!=='AbortError')$('prepare-status').textContent='无法对比：'+error.message;}
+  finally{if(ticket===revision)$('cancel-prepare').hidden=true;}
+}
+$('compare-presets').onclick=()=>comparePresets();
 try{await loadPresets();}catch(error){$('prepare-status').textContent=error.message;}
 await demo();

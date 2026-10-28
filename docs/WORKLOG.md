@@ -198,8 +198,11 @@ README、契约与路线同步，新增 streaming-boundaries.md。明确应用�
 ### 2026-10-28 · 结果可读 + 架构完整
 PM：终审侧准备结果难扫、架构文档偏薄。架构：补系统上下文、运行时双路径、合同清单、失败模式。工程：准备页截断指标卡与 `#prepare-next`；`architecture.md` 重写；facts/hub 断言。
 
+### 2026-10-28 · 策略预设目标数对比
+PM：评审需反复切预设才能看差异。架构：对比 = 同 `prepare` 接口多次调用，不改勾选/导出。工程：`#compare-presets` / `#policy-compare`；facts/架构/hub；`policy-compare` 与浏览器断言（Qwen 45/24/45；推理 199/78/155）。
+
 ### 2026-10-28 · CI 修：指标卡选择器
-工程：截断附卡使 `#prepare-metrics strong` 末项变为「移除目标」；`verify-preparation-browser.mjs` 改为按标题取「训练目标」，并断言移除 token/目标与下一步条可见。父 tip `1ee4bec`。
+工程：截断附卡使 `#prepare-metrics strong` 末项变为「移除目标」；`verify-preparation-browser.mjs` 改为按标题取「训练目标」，并断言移除 token/目标与下一步条可见。父 tip `1ee4bec` → tip `0fdf88d` CI 绿。
 
 ### 2026-10-28 · 准备结果可读 + 架构完整
 PM：截断损失不够显眼；架构说明书偏短。架构：补 runtime/contracts/failure modes。工程：准备页截断指标卡与 `#prepare-next`；hub 链架构文；facts 断言。远端 tip `1ee4bec`（浏览器 job 随后红，见上条）。

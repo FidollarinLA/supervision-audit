@@ -30,6 +30,8 @@ test('registration facts emit measurable evidence without drafting form prose', 
   assert.equal(facts.surface_checks.reviewer_pack_doc, true);
   assert.equal(facts.surface_checks.architecture_runtime_doc, true);
   assert.equal(facts.surface_checks.prepare_has_next_strip, true);
+  assert.equal(facts.surface_checks.prepare_has_policy_compare, true);
+  assert.equal(facts.surface_checks.architecture_policy_compare_doc, true);
   assert.ok(facts.docs_to_cite.includes('docs/REVIEWER_PACK.md'));
   assert.ok(Array.isArray(facts.contestant_only));
   assert.ok(facts.contestant_only.some((row) => /self-authored|本人|Contest form|form narrative/i.test(row) || /Official form/.test(row)));
