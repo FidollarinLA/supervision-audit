@@ -195,6 +195,9 @@ README、契约与路线同步，新增 streaming-boundaries.md。明确应用�
 
 目标：冲过审；每 2 小时迭代至当日 14:00。
 
+### 2026-10-28 · 结果可读 + 架构完整
+PM：终审侧准备结果难扫、架构文档偏薄。架构：补系统上下文、运行时双路径、合同清单、失败模式。工程：准备页截断指标卡与 `#prepare-next`；`architecture.md` 重写；facts/hub 断言。
+
 ### 2026-10-28 · 多源混合 UI 演示
 PM：初审/报名已过，终审补齐「混合场景」可感知入口。架构：浏览器只加载 `mix-traces` 冻结输出，不在前端重做混合。工程：`examples/traces/mixed-rendered.json`、准备页 `load-mix`、facts/hub/REVIEWER_PACK/测试。
 

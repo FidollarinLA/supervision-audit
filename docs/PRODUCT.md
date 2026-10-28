@@ -39,4 +39,4 @@
 
 Agent 执行、多模态、全模板覆盖、正式宣称生产收益、用 AI 稿冒充本人报名终稿。
 
-分层与包边界见 [architecture.md](architecture.md)。
+分层、运行时与合同见 [architecture.md](architecture.md)。产品 backlog 见 [ITERATION_BOARD.md](ITERATION_BOARD.md)。

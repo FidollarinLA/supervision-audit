@@ -5,7 +5,7 @@ const runner=new AuditRunner();
 let revision=0,normalized=null,normalizedText='',result=null,presetCatalog=[],applyingPreset=false;
 function invalidate(){revision++;runner.cancel();if($('raw-input').value!==normalizedText)normalized=null;result=null;$('cancel-prepare').hidden=true;$('export-normalized').disabled=!normalized;
   for(const id of ['export-training','export-document','export-preparation','inspect-prepared'])$(id).disabled=true;
-  $('prepare-results').hidden=true;$('prepare-metrics').replaceChildren();$('raw-status').textContent='输入或策略已变化，请重新运行。';$('prepare-status').textContent='';}
+  $('prepare-results').hidden=true;$('prepare-next').hidden=true;$('prepare-next').replaceChildren();$('prepare-metrics').replaceChildren();$('raw-status').textContent='输入或策略已变化，请重新运行。';$('prepare-status').textContent='';}
 function markCustomPolicy(){if(applyingPreset)return;if($('policy-preset').value){$('policy-preset').value='';$('policy-preset-summary').textContent='已改为自定义勾选；请重新生成标签。';}invalidate();}
 function applyPolicy(policy){for(const key of keys)$(key).checked=Boolean(policy[key]);}
 async function loadPresets(){
@@ -41,10 +41,28 @@ async function run(op){invalidate();const ticket=revision;$('cancel-prepare').hi
   if(ticket!==revision)return;
   if(op==='normalize'){normalized=output;normalizedText=$('raw-input').value;$('export-normalized').disabled=false;status.textContent=`已校验 ${output.rows.length} 条完整轨迹。下一步用目标模型模板分词。`;}
   else {result=output;const r=output.report;const pass=r.status==='pass';status.textContent=pass?'准备完成，训练门禁通过。可下载训练数据或查看逐 token 证据。':'门禁未通过，请下载报告并检查问题。';$('export-training').disabled=!pass;$('export-document').disabled=!pass;$('inspect-prepared').disabled=!pass;$('export-preparation').disabled=false;
-    const cards=[['准备结果',pass?'通过':'需检查'],['输入样本',r.sample_count],['实际 token',r.token_count],['训练目标',r.effective_target_count]];
-    $('prepare-metrics').replaceChildren(...cards.map(([title,value])=>{const node=el('div','');node.className='metric';node.append(el('small',title),el('strong',value));return node;}));
     const sequence=output.sequence_summary;
-    if(sequence?.truncated_samples)status.textContent+=` 已截断 ${sequence.truncated_samples} 条，移除 ${sequence.removed_tokens} 个 token / ${sequence.removed_targets} 个训练目标。${sequence.boundary||''}`;
+    const cards=[['准备结果',pass?'通过':'需检查'],['输入样本',r.sample_count],['实际 token',r.token_count],['训练目标',r.effective_target_count]];
+    if(sequence?.truncated_samples){
+      cards.push(['截断样本',sequence.truncated_samples],['移除 token',sequence.removed_tokens],['移除目标',sequence.removed_targets]);
+      status.textContent+=` 已截断 ${sequence.truncated_samples} 条，移除 ${sequence.removed_tokens} 个 token / ${sequence.removed_targets} 个训练目标。`;
+      if(sequence.boundary)status.textContent+=' '+sequence.boundary;
+    }
+    $('prepare-metrics').replaceChildren(...cards.map(([title,value])=>{const node=el('div','');node.className='metric';node.append(el('small',title),el('strong',value));return node;}));
+    const next=$('prepare-next');next.replaceChildren();
+    const title=el('p','');title.className='prepare-next-title';title.textContent=pass?'下一步（门禁已通过）':'下一步（先处理门禁问题）';
+    const actions=el('div','');actions.className='prepare-next-actions';
+    if(pass){
+      const dl=el('button','下载训练 JSONL');dl.type='button';dl.className='primary';dl.onclick=()=>$('export-training').click();
+      const ev=el('button','查看 token 证据');ev.type='button';ev.className='secondary';ev.onclick=()=>$('inspect-prepared').click();
+      const doc=el('button','下载审计文档');doc.type='button';doc.className='secondary';doc.onclick=()=>$('export-document').click();
+      actions.append(dl,ev,doc);
+    }else{
+      const rep=el('button','下载完整准备报告');rep.type='button';rep.className='primary';rep.onclick=()=>$('export-preparation').click();
+      actions.append(rep);
+    }
+    next.append(title,actions);if(sequence?.boundary){const note=el('p','');note.className='prepare-next-note';note.textContent='长度策略：'+sequence.boundary;next.append(note);}
+    next.hidden=false;
     $('prepared-samples').replaceChildren(...r.samples.map(sample=>{const tr=el('tr','');const tool=sample.effective_target_indices.filter(i=>sample.roles[i]==='tool').length;const change=sequence?.samples.find(row=>row.id===sample.id);tr.append(...[sample.id,sample.tokens,sample.effective_target_indices.length,tool,change?`${change.removed_tokens} / ${change.removed_targets}`:'0 / 0',sample.findings.length?'检查报告':'通过'].map(value=>el('td',value)));return tr;}));
     $('evidence-basis').textContent='标签按所供候选区间、token 偏移和当前策略生成。报告中的预期掩码来自同一准备策略；独立交叉验证另见项目的 Teich 验证记录。';
     $('prepared-source').textContent='Tokenizer：'+output.tokenizer_source+' · 模板：'+output.template_source;$('prepare-results').hidden=false;}

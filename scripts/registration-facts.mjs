@@ -67,7 +67,9 @@ const checks = {
     /id="demo-truncate-right"/.test(preparePage) && /id="demo-complete-turns"/.test(preparePage),
   audit_is_separate: existsSync(join(root, 'web/audit.html')),
   reviewer_pack_doc: existsSync(join(root, 'docs/REVIEWER_PACK.md')),
+  architecture_runtime_doc: /运行时双路径/.test(readFileSync(join(root, 'docs/architecture.md'), 'utf8')),
   mixed_rendered_fixture: existsSync(join(root, 'examples/traces/mixed-rendered.json')),
+  prepare_has_next_strip: /id="prepare-next"/.test(preparePage),
 };
 
 for (const [name, ok] of Object.entries(checks)) {
