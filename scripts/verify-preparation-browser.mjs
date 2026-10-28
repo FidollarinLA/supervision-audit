@@ -6,6 +6,9 @@ import {prepare_labels_json,prepare_training_json} from '../web/preparation-engi
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE?pathToFileURL(process.env.PLAYWRIGHT_MODULE).href:'playwright');
 const server=createStaticServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const address='http://127.0.0.1:'+server.address().port;
+async function metricStrong(page,title){
+  return page.locator('#prepare-metrics .metric').filter({has:page.locator('small',{hasText:title})}).locator('strong').textContent();
+}
 let browser;
 const errors=[],checks=[];
 await mkdir('artifacts/preparation-browser',{recursive:true});
@@ -21,7 +24,7 @@ try {
   checks.push('raw normalization completes in real Worker');
   await page.locator('#prepare').click();
   await page.waitForFunction(()=>document.getElementById('prepare-status').textContent.includes('门禁通过'));
-  assert.equal(await page.locator('#prepare-metrics strong').last().textContent(),'45');
+  assert.equal(await metricStrong(page,'训练目标'),'45');
   assert.equal(await page.locator('#prepared-samples tr').count(),2);
   assert.deepEqual(await page.locator('#prepared-samples tr td:nth-child(4)').allTextContents(),['0','0']);
   const [download]=await Promise.all([page.waitForEvent('download'),page.locator('#export-training').click()]);
@@ -38,7 +41,10 @@ try {
   assert.equal(await lengthPage.locator('#export-training').isDisabled(),true);
   await lengthPage.locator('#overflow').selectOption('truncate-right');await lengthPage.locator('#prepare').click();
   await lengthPage.waitForFunction(()=>document.getElementById('prepare-status').textContent.includes('门禁通过'));
-  assert.equal(await lengthPage.locator('#prepare-metrics strong').last().textContent(),'33');
+  assert.equal(await metricStrong(lengthPage,'训练目标'),'33');
+  assert.equal(await metricStrong(lengthPage,'移除目标'),'12');
+  assert.equal(await metricStrong(lengthPage,'移除 token'),'24');
+  assert.ok(await lengthPage.locator('#prepare-next').isVisible());
   assert.match(await lengthPage.locator('#prepare-status').textContent(),/24 个 token \/ 12 个训练目标/);
   assert.deepEqual(await lengthPage.locator('#prepared-samples tr td:nth-child(5)').allTextContents(),['0 / 0','24 / 12']);
   const [prefixDownload]=await Promise.all([lengthPage.waitForEvent('download'),lengthPage.locator('#export-training').click()]);
@@ -71,15 +77,15 @@ try {
   await page.locator('#train_on_tools').uncheck();await page.locator('#train_on_reasoning').uncheck();
   assert.equal(await page.locator('#export-training').isDisabled(),true);
   await page.locator('#prepare').click();await page.waitForFunction(()=>document.getElementById('prepare-status').textContent.includes('门禁通过'));
-  assert.equal(await page.locator('#prepare-metrics strong').last().textContent(),'24');
+  assert.equal(await metricStrong(page,'训练目标'),'24');
   checks.push('final-only strategy removes tool-call labels and invalidates prior export');
   await page.locator('#train_on_reasoning').check();await page.locator('#train_on_tools').check();
   await page.locator('#load-reasoning').click();await page.waitForFunction(()=>document.getElementById('rendered-input').value.includes('explicit-reasoning'));
   await page.locator('#prepare').click();await page.waitForFunction(()=>document.getElementById('prepare-status').textContent.includes('门禁通过'));
-  const all=Number(await page.locator('#prepare-metrics strong').last().textContent());
+  const all=Number(await metricStrong(page,'训练目标'));
   await page.locator('#train_on_reasoning').uncheck();await page.locator('#prepare').click();
   await page.waitForFunction(()=>document.getElementById('prepare-status').textContent.includes('门禁通过'));
-  assert.ok(Number(await page.locator('#prepare-metrics strong').last().textContent())<all);
+  assert.ok(Number(await metricStrong(page,'训练目标'))<all);
   checks.push('reasoning strategy works on explicitly authored template');
   await page.locator('#train_on_final_answers').uncheck();await page.locator('#train_on_tools').uncheck();
   await page.locator('#prepare').click();await page.waitForFunction(()=>document.getElementById('prepare-status').textContent.includes('no effective targets'));
