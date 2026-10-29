@@ -74,6 +74,8 @@ const checks = {
   architecture_policy_compare_doc: /策略预设对比/.test(readFileSync(join(root, 'docs/architecture.md'), 'utf8')),
   acceptance_gate_doc: /mooncakes\.io/.test(readFileSync(join(root, 'docs/ACCEPTANCE_GATE.md'), 'utf8')),
   readme_moonc_floor: /0\.10\.16/.test(readFileSync(join(root, 'README.md'), 'utf8')),
+  hub_has_accept_cmd: /npm run accept/.test(hub),
+  hub_has_gate_strip: /hub-gate-strip/.test(hub),
 };
 
 for (const [name, ok] of Object.entries(checks)) {

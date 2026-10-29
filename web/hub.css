@@ -20,6 +20,8 @@
 .hub-acceptance{background:#fff;border:1px solid #e1e5da;border-radius:12px;padding:22px 24px;margin-bottom:18px}
 .hub-acceptance-head p{margin:8px 0 0;font-size:13px;line-height:1.7;color:#6f7f6a;max-width:720px}
 .hub-acceptance h2{font-size:18px;margin:8px 0 0}
+.hub-gate-strip{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0;padding:0;list-style:none}
+.hub-gate-strip li{font-size:11px;line-height:1.4;color:#2f4f3a;background:#eff2e9;border:1px solid #d7e0d0;border-radius:999px;padding:6px 10px}
 .hub-checklist{margin:18px 0 0;padding-left:22px;color:#3f5343;font-size:13px;line-height:1.85}
 .hub-checklist li{margin:0 0 10px}
 .hub-checklist b{color:#2f4f3a}

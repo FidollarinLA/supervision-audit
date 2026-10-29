@@ -60,6 +60,7 @@ git clone https://github.com/FidollarinLA/supervision-audit.git
 cd supervision-audit
 npm run build          # moon build → 浏览器/CLI 引擎
 npm test               # Node 侧核心路径
+npm run accept         # 验收自检：moonc 地板 + Mooncakes 查询 + 演示证据
 npm run demo:reviewer  # 最小可复现证据包
 npm run dev            # http://127.0.0.1:4317/
 ```

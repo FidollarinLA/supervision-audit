@@ -21,10 +21,9 @@
 git clone https://github.com/FidollarinLA/supervision-audit.git
 cd supervision-audit
 npm run build
+npm run accept           # moonc 地板 + Mooncakes 0.1.0 查询 + 演示/事实卡
 npm test
-npm run demo:reviewer
-npm run facts:registration
-npm run check:registry   # 核对 Mooncakes 0.1.0 可安装
+npm run check:registry   # 可选：从注册表安装并在三后端跑消费者
 npm run dev              # http://127.0.0.1:4317/
 ```
 
