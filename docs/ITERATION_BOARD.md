@@ -9,11 +9,12 @@
 ## 已完成
 - 工作台主路径、Teich、长度/混合/预设对比、架构说明书
 - `docs/ACCEPTANCE_GATE.md`、CI moonc 地板 + registry 查询、`publish:mooncakes`
-- 远端 tip：本轮 push 后更新
+- 远端 tip：`521591e`（九条验收对齐；moonc/注册表由 npm test 门禁）
 
 ## 下一刀
-1. 本人 `moon login` → 发布 `0.1.1`（含 preparation）
-2. 继续可感知增量（不虚构试用）
+1. **本人必须：** 终端执行 `moon login`，再 `npm run publish:mooncakes` 发布 `0.1.1`
+2. 若需改 `.github/workflows`，给 `gh` token 加 `workflow` scope 后再推
+3. 继续可感知增量（不虚构试用）
 
 ## 不做
 - 堆无验收功能、冒充 Teich 全量替代、代写本人终稿、虚构 Hub 词表
