@@ -10,6 +10,8 @@
     "benchmark": "node scripts/benchmark.mjs",
     "check:package": "node scripts/check-package.mjs",
     "check:registry": "node scripts/check-registry.mjs",
+    "check:moonc": "node scripts/assert-moonc-version.mjs",
+    "publish:mooncakes": "node scripts/publish-mooncakes.mjs",
     "prepare": "node prepare.mjs",
     "mix": "node scripts/mix-traces.mjs",
     "demo:reviewer": "node scripts/reviewer-demo.mjs",

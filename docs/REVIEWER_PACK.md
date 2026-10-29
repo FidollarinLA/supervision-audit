@@ -9,6 +9,7 @@
 | 1 | `npm run build` → `npm run demo:reviewer` → `npm run facts:registration` |
 | 2 | `npm run dev` → [http://127.0.0.1:4317/](http://127.0.0.1:4317/) |
 | 3 | 首页验收清单 → 准备页 →（可选）审计门禁 |
+| 4 | [ACCEPTANCE_GATE.md](ACCEPTANCE_GATE.md) 对照官方九条 |
 
 ## 应看到的数字
 

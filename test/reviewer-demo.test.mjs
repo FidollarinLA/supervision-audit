@@ -45,6 +45,7 @@ test('product hub is the default entry and audit lives under /audit.html', async
     assert.match(hubText, /prepare\.html/);
     assert.match(hubText, /audit\.html/);
     assert.match(hubText, /评审验收清单/);
+    assert.match(hubText, /ACCEPTANCE_GATE\.md/);
     assert.match(hubText, /demo:reviewer/);
     assert.match(hubText, /REVIEWER_PACK\.md/);
     assert.match(hubText, /10 分钟核对包/);

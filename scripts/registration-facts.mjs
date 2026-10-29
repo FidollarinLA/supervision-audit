@@ -72,6 +72,8 @@ const checks = {
   prepare_has_next_strip: /id="prepare-next"/.test(preparePage),
   prepare_has_policy_compare: /id="compare-presets"/.test(preparePage) && /id="policy-compare"/.test(preparePage),
   architecture_policy_compare_doc: /策略预设对比/.test(readFileSync(join(root, 'docs/architecture.md'), 'utf8')),
+  acceptance_gate_doc: /mooncakes\.io/.test(readFileSync(join(root, 'docs/ACCEPTANCE_GATE.md'), 'utf8')),
+  readme_moonc_floor: /0\.10\.16/.test(readFileSync(join(root, 'README.md'), 'utf8')),
 };
 
 for (const [name, ok] of Object.entries(checks)) {

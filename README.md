@@ -6,6 +6,8 @@ SupervisionAudit 是以 MoonBit 为核心的**训练数据准备与监督验证�
 
 > 当前是可运行原型，尚未完成赛事验收或生产数据端到端训练验证。演示语料均为合成文本；已补充固定版本 tokenizer / collator 导出，以及微型随机模型的损失和梯度验证。工具不执行模型训练，也不证明模型效果。
 
+**验收对照：** 官方 9 条要求的仓库自查见 [docs/ACCEPTANCE_GATE.md](docs/ACCEPTANCE_GATE.md)。MoonBit 模块已发布 [`FidollarinLA/supervision_audit@0.1.0`](https://mooncakes.io/docs/FidollarinLA/supervision_audit@0.1.0)（Apache-2.0）。工具链要求 **moonc ≥ 0.10.16**。
+
 ## 新增：训练数据准备
 
 启动后打开 **http://127.0.0.1:4317/** 产品入口，再进入「训练数据准备」：校验原始轨迹 → 选择训练内容 → 生成标签并通过门禁 → 下载训练 JSONL 或一键查看 token 证据。评审可先跑：
@@ -51,13 +53,15 @@ python integrations/transformers/load_prepared_jsonl.py training.jsonl
 
 ## 三分钟跑起来
 
-先安装 [官方 MoonBit 工具链](https://docs.moonbitlang.com/en/latest/first-steps.html)（本轮兼容性检查使用 0.1.20261012 / moonc v0.10.15），并准备 Node.js 22 或更新版本。旧版工具链可能不识别新版格式化器输出的 `Int32` 类型名，请先更新工具链。
+先安装 [官方 MoonBit 工具链](https://docs.moonbitlang.com/en/latest/first-steps.html)（**moonc ≥ 0.10.16**；本机/CI 以官方安装脚本为准），并准备 Node.js 22 或更新版本。旧版工具链可能不识别新版格式化器输出的 `Int32` 类型名，请先更新工具链。
 
 ```sh
 git clone https://github.com/FidollarinLA/supervision-audit.git
 cd supervision-audit
-npm run build
-npm run dev
+npm run build          # moon build → 浏览器/CLI 引擎
+npm test               # Node 侧核心路径
+npm run demo:reviewer  # 最小可复现证据包
+npm run dev            # http://127.0.0.1:4317/
 ```
 
 打开 **http://127.0.0.1:4317**。无需 API Key、模型下载或 npm 运行依赖。
@@ -172,7 +176,7 @@ node cli.mjs examples/transformers/batch.jsonl --jsonl --roles text --summary
 | `web/` | 本地可视化工作台 |
 | `cli.mjs` | 离线命令行入口 |
 
-MoonBit 模块 `FidollarinLA/supervision_audit@0.1.0` 已发布至 [Mooncakes](https://mooncakes.io/docs/FidollarinLA/supervision_audit)，并从独立临时模块完成 JS、Wasm GC、native 安装测试。公开类型与接口见 [pkg.generated.mbti](pkg.generated.mbti)，安装配置见[MoonBit 接入说明](docs/package-rehearsal.md)。完整 Web 与 CLI 请从本仓库构建。
+MoonBit 模块 `FidollarinLA/supervision_audit@0.1.0` 已发布至 [Mooncakes](https://mooncakes.io/docs/FidollarinLA/supervision_audit)，并从独立临时模块完成 JS、Wasm GC、native 安装测试（`npm run check:registry`）。公开类型与接口见 [pkg.generated.mbti](pkg.generated.mbti)，安装配置见[MoonBit 接入说明](docs/package-rehearsal.md)。源码 `moon.mod` 可能超前于已发布小版本；新版本需登录后执行 `npm run publish:mooncakes`。完整 Web 与 CLI 请从本仓库构建。许可证为 [Apache-2.0](LICENSE)；第三方边界见 [THIRD_PARTY.md](THIRD_PARTY.md)。验收九条自查见 [docs/ACCEPTANCE_GATE.md](docs/ACCEPTANCE_GATE.md)。
 
 已有独立消费者验证：在 Git 检出目录执行 `npm run check:package`，会生成实际发布归档，解压到临时目录，再由另一个 MoonBit 模块调用公开接口，分别测试 JS、Wasm GC 和 native。需要 `git`、`unzip` 和 native 编译环境；这不执行发布，也不验证注册表安装。接入示例与复现范围见[本地包复现](docs/package-rehearsal.md)。
 

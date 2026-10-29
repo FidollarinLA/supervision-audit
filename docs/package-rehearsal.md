@@ -1,6 +1,6 @@
 # 本地包复现与 MoonBit 接入
 
-模块名为 `FidollarinLA/supervision_audit`，版本 `0.1.0`，许可证为 Apache-2.0。2026-10-09 已发布至 Mooncakes，`moon view` 确认该版本可用且未撤回；独立临时模块从注册表安装后在 JS、Wasm GC、native 调用公开接口通过。发布源码对应仓库提交 `f804060`；后续文档和验证脚本更新不改变该版本核心。
+模块名为 `FidollarinLA/supervision_audit`，许可证为 Apache-2.0。注册表已发布并保持可查询的版本是 **`0.1.0`**（2026-10-09，`moon view` / `npm run check:registry`）。工作区 `moon.mod` 可能已升到下一小版本（如 `0.1.1`）以纳入 preparation 等后续源码；新版本需本人 `moon login` 后执行 `npm run publish:mooncakes`，在发布成功前不要把未上架版本写成“已发布”。
 
 ## 从注册表安装
 

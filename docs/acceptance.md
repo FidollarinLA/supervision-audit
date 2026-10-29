@@ -2,6 +2,12 @@
 
 这是交付清单，不是官方已通过审核或验收的证明。当前判断：具备申报和技术验收自查基础，正式结论仍取决于赛方及本人提交材料。
 
+**官方九条对照（持续更新）：** [ACCEPTANCE_GATE.md](ACCEPTANCE_GATE.md)
+
+## 2026-10-29 验收指南对齐
+
+赛方说明：审核通过后验收前无需再交表格，保持开发并推送 GitHub。九条证据见 ACCEPTANCE_GATE；CI 已断言 moonc ≥ 0.10.16 并查询 Mooncakes `0.1.0`。源码 `moon.mod` 版本可能为待发布的 `0.1.1`（需 `moon login` 后 `npm run publish:mooncakes`）。
+
 ## 2026-10-27 增量自查入口
 
 | 入口 | 用途 |
