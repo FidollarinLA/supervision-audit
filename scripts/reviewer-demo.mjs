@@ -132,6 +132,14 @@ const evidence = {
     hub: 'http://127.0.0.1:4317/',
     prepare: 'http://127.0.0.1:4317/prepare.html',
     audit_gate: 'http://127.0.0.1:4317/audit.html',
+    acceptance_gate: 'docs/ACCEPTANCE_GATE.md',
+    trainer_recipe: 'docs/trainer-recipe.md',
+  },
+  acceptance_pointers: {
+    self_check: 'npm run accept',
+    mooncakes: 'FidollarinLA/supervision_audit@0.1.0',
+    license: 'Apache-2.0',
+    note: 'Pointers only; not an official acceptance certificate.',
   },
   limits: [
     'Does not claim contest acceptance or model quality.',

@@ -1,4 +1,4 @@
-﻿# 持续迭代看板（过审导向）
+# 持续迭代看板（过审导向）
 
 状态：初审已过；验收指南下发后持续推 GitHub。本机仍未 `moon login`。
 
@@ -10,7 +10,7 @@
 ## 已完成
 - 九条验收自查、`npm run accept`、策略对比、架构说明书
 - 审计下一步条、准备页训练接入注记、Hub 命令含 accept
-- 远端 tip：本串 push 后更新
+- 远端 tip：`9f962ce`（门禁引导串）CI 跟进中；本刀补 reviewer 验收指针
 
 ## 下一刀
 1. **本人必须：** `moon login` → `npm run publish:mooncakes`（`0.1.1`）

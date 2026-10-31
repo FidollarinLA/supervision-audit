@@ -65,7 +65,9 @@ async function run(op){invalidate();const ticket=revision;$('cancel-prepare').hi
     if(sequence?.boundary){const note=el('p','');note.className='prepare-next-note';note.textContent='长度策略：'+sequence.boundary;next.append(note);}
     if(pass){
       const recipe=el('p','');recipe.className='prepare-next-note prepare-recipe';
-      recipe.textContent='训练接入（本机）：先下载 JSONL，再运行 python integrations/transformers/load_prepared_jsonl.py training.jsonl（packing=False）。详见 docs/trainer-recipe.md。';
+      recipe.append(document.createTextNode('训练接入（本机）：先下载 JSONL，再运行 '),(()=>{const code=document.createElement('code');code.textContent='python integrations/transformers/load_prepared_jsonl.py training.jsonl';return code;})(),document.createTextNode('（packing=False）。说明见 '));
+      const link=document.createElement('a');link.href='https://github.com/FidollarinLA/supervision-audit/blob/main/docs/trainer-recipe.md';link.target='_blank';link.rel='noopener';link.textContent='trainer-recipe.md';
+      recipe.append(link,document.createTextNode('。'));
       next.append(recipe);
     }
     next.hidden=false;
