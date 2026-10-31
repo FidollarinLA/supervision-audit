@@ -54,6 +54,7 @@ function invalidate(message = '输入已修改，请重新运行审计。') {
   $('run').disabled = false; $('cancel').hidden = true;
   result = null; input = null;
   for (const id of ['metrics', 'tokens', 'findings', 'role-track', 'sample', 'sample-overview']) $(id).replaceChildren();
+  $('audit-next').hidden = true; $('audit-next').replaceChildren();
   $('detail').textContent = '请成功运行审计后查看证据。';
   $('ratio').textContent = '—'; $('progress').style.width = '0%';
   $('target-note').textContent = '位移后预测目标：无法计算。';
@@ -94,6 +95,20 @@ function render() {
     node.append(element('small', '', title), element('strong', '', value), element('p', '', sub));
     return node;
   }));
+  const next = $('audit-next'); next.replaceChildren();
+  const nextTitle = element('p', 'audit-next-title', report.status === 'pass' ? '下一步（门禁已通过）' : report.status === 'review' ? '下一步（需人工复核）' : '下一步（先处理错误）');
+  const actions = element('div', 'audit-next-actions');
+  const exportBtn = element('button', 'primary', '导出完整报告'); exportBtn.type = 'button'; exportBtn.onclick = () => $('export').click();
+  actions.append(exportBtn);
+  if (report.status === 'pass') {
+    const prepare = element('a', 'secondary', '回到训练数据准备 →'); prepare.href = 'prepare.html';
+    actions.append(prepare);
+  } else {
+    const findingsJump = element('button', 'secondary', '查看问题列表'); findingsJump.type = 'button';
+    findingsJump.onclick = () => $('findings')?.scrollIntoView?.({behavior: 'smooth', block: 'start'});
+    actions.append(findingsJump);
+  }
+  next.append(nextTitle, actions); next.hidden = false;
   $('sample').replaceChildren(...report.samples.map((sample, index) => {
     const option = element('option', '', sample.id); option.value = index; return option;
   }));

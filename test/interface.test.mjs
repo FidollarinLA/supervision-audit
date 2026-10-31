@@ -32,11 +32,14 @@ test('interface renders engine evidence, navigates tokens and clears stale resul
  get('import-data').onclick();assert.equal(get('file').clicked,true);
  get('import-baseline').onclick();assert.equal(get('baseline').clicked,true);
  assert.equal(get('metrics').children[0].children[1].textContent,'发现错误');
+ assert.equal(get('audit-next').hidden,false);
+ assert.match(get('audit-next').children[0].textContent,/下一步（先处理错误）/);
  assert.equal(get('tokens').children.length,7);
  assert.ok(get('findings').children.length>0);
  get('tokens').children[1].onclick();assert.match(get('detail').textContent,/位置 #1/);
  get('preset').value='healthy';await get('preset').onchange();
  assert.equal(get('metrics').children[0].children[1].textContent,'通过');
+ assert.match(get('audit-next').children[0].textContent,/下一步（门禁已通过）/);
  await get('compare-demo').onclick();
  assert.match(get('data-origin').textContent,/预训练修复后/);
  assert.match(get('baseline-origin').textContent,/预训练修复前/);
@@ -58,6 +61,7 @@ test('interface renders engine evidence, navigates tokens and clears stale resul
  await cancelledRun;
  assert.match(get('notice').textContent,/已取消审计/);
  assert.equal(get('metrics').children.length,0);
+ assert.equal(get('audit-next').hidden,true);
  assert.equal(get('run').disabled,false);
  assert.equal(get('cancel').hidden,true);
  await get('run').onclick();

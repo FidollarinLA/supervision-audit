@@ -57,6 +57,7 @@ sequenceDiagram
 - **CLI：** 同进程直接调用编译后的 JS 引擎；退出码区分 pass / fail / review。
 - **CI：** Linux 上 `moon build` 生成引擎；Windows 本机可能遇 moonc 路径 ICE，以 Actions 为准。
 - **策略预设对比：** 准备页对清单内每个预设依次调用同一 `prepare` 接口（不同 `policy`，同一 rendered 文本与长度设置）。只做展示摘要，不引入第二套 masking，也不改当前勾选或已有导出。
+- **门禁页下一步条：** `/audit.html` 的 `#audit-next` 只根据已有 `report.status` 给出导出/回准备/看问题入口，不改变审计结论。
 
 ## 4. 合同清单
 

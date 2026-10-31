@@ -55,7 +55,9 @@ test('product hub is the default entry and audit lives under /audit.html', async
     assert.doesNotMatch(hubText, /id="run"/);
     const audit = await fetch(base + '/audit.html');
     assert.equal(audit.status, 200);
-    assert.match(await audit.text(), /id="run"/);
+    const auditText = await audit.text();
+    assert.match(auditText, /id="run"/);
+    assert.match(auditText, /id="audit-next"/);
     const prepare = await fetch(base + '/prepare.html');
     assert.equal(prepare.status, 200);
     const prepareText = await prepare.text();

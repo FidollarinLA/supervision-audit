@@ -72,10 +72,14 @@ const checks = {
   prepare_has_next_strip: /id="prepare-next"/.test(preparePage),
   prepare_has_policy_compare: /id="compare-presets"/.test(preparePage) && /id="policy-compare"/.test(preparePage),
   architecture_policy_compare_doc: /策略预设对比/.test(readFileSync(join(root, 'docs/architecture.md'), 'utf8')),
+  architecture_audit_next_doc: /门禁页下一步条/.test(readFileSync(join(root, 'docs/architecture.md'), 'utf8')),
   acceptance_gate_doc: /mooncakes\.io/.test(readFileSync(join(root, 'docs/ACCEPTANCE_GATE.md'), 'utf8')),
   readme_moonc_floor: /0\.10\.16/.test(readFileSync(join(root, 'README.md'), 'utf8')),
   hub_has_accept_cmd: /npm run accept/.test(hub),
   hub_has_gate_strip: /hub-gate-strip/.test(hub),
+  audit_has_next_strip: /id="audit-next"/.test(readFileSync(join(root, 'web/audit.html'), 'utf8')),
+  prepare_has_trainer_recipe_note: /load_prepared_jsonl\.py/.test(readFileSync(join(root, 'web/prepare.js'), 'utf8')),
+  hub_commands_include_accept: /npm run accept/.test(hub) && /5-MINUTE REVIEWER PATH/.test(hub),
 };
 
 for (const [name, ok] of Object.entries(checks)) {

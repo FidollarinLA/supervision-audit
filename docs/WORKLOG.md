@@ -198,6 +198,9 @@ README、契约与路线同步，新增 streaming-boundaries.md。明确应用�
 ### 2026-10-28 · 结果可读 + 架构完整
 PM：终审侧准备结果难扫、架构文档偏薄。架构：补系统上下文、运行时双路径、合同清单、失败模式。工程：准备页截断指标卡与 `#prepare-next`；`architecture.md` 重写；facts/hub 断言。
 
+### 2026-10-31 · 门禁引导 + 训练接入提示 + Hub accept
+PM：审计缺下一步；准备通过后缺 trainer 接入；Hub 命令未列 accept。工程：`#audit-next`；prepare recipe 注记；Hub/`accept`；架构口径；界面测试断言。限制：仍未 moon login，不发 0.1.1。
+
 ### 2026-10-29 · 官方九条验收对齐
 PM：验收指南九条。工程：`docs/ACCEPTANCE_GATE.md`；README moonc≥0.10.16；CI `check:moonc` + `moon view`/`check:registry`；`moon.mod`→0.1.1（待 login 发布）；`npm run publish:mooncakes`。限制：本机 `moon whoami` = Not logged in，不能代发版；`0.1.0` 仍在线。
 

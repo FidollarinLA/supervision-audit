@@ -61,7 +61,13 @@ async function run(op){invalidate();const ticket=revision;$('cancel-prepare').hi
       const rep=el('button','下载完整准备报告');rep.type='button';rep.className='primary';rep.onclick=()=>$('export-preparation').click();
       actions.append(rep);
     }
-    next.append(title,actions);if(sequence?.boundary){const note=el('p','');note.className='prepare-next-note';note.textContent='长度策略：'+sequence.boundary;next.append(note);}
+    next.append(title,actions);
+    if(sequence?.boundary){const note=el('p','');note.className='prepare-next-note';note.textContent='长度策略：'+sequence.boundary;next.append(note);}
+    if(pass){
+      const recipe=el('p','');recipe.className='prepare-next-note prepare-recipe';
+      recipe.textContent='训练接入（本机）：先下载 JSONL，再运行 python integrations/transformers/load_prepared_jsonl.py training.jsonl（packing=False）。详见 docs/trainer-recipe.md。';
+      next.append(recipe);
+    }
     next.hidden=false;
     $('prepared-samples').replaceChildren(...r.samples.map(sample=>{const tr=el('tr','');const tool=sample.effective_target_indices.filter(i=>sample.roles[i]==='tool').length;const change=sequence?.samples.find(row=>row.id===sample.id);tr.append(...[sample.id,sample.tokens,sample.effective_target_indices.length,tool,change?`${change.removed_tokens} / ${change.removed_targets}`:'0 / 0',sample.findings.length?'检查报告':'通过'].map(value=>el('td',value)));return tr;}));
     $('evidence-basis').textContent='标签按所供候选区间、token 偏移和当前策略生成。报告中的预期掩码来自同一准备策略；独立交叉验证另见项目的 Teich 验证记录。';
