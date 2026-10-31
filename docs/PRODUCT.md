@@ -27,7 +27,7 @@
 3. 运行默认 Qwen 演示 → 45 目标 → 下载 JSONL
 4. 切换策略预设 final-only → 24 目标，或点「对比预设目标数」一次看清差异；可选「Zephyr 风格演示」验证第二模板族
 5. 一键进入审计门禁查看 token 证据
-6. CLI：`npm run demo:reviewer` 产出 `artifacts/reviewer-demo/evidence.json`（含 zephyr_typed_demo）
+6. CLI：`npm run accept`（moonc/Mooncakes/演示自检）→ `npm run demo:reviewer` 产出 `artifacts/reviewer-demo/evidence.json`（含验收指针与 zephyr_typed_demo）
 
 ## 与 Teich 的边界（对外口径）
 
